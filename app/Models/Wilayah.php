@@ -10,7 +10,7 @@ class Wilayah extends Model
     use HasFactory;
 
     protected $fillable = ['nama_wilayah', 'tipe', 'kode_wilayah'];
-    protected $table = 'wilayahs';
+    protected $table = 'wilayah';
 
     public function users()
     {

@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pembayarans', function (Blueprint $table) {
+        Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('laporan_id')->constrained('laporan')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('user')->cascadeOnDelete();
+            $table->decimal('harga', 10, 2);
+            $table->string('metode_pembayaran')->nullable();
+            $table->string('qr_code_generate')->nullable();
+            $table->string('bukti_transaksi')->nullable();
+            $table->enum('status_pembayaran', ['Menunggu', 'Terverifikasi', 'Lunas', 'Ditolak'])->default('Menunggu');
             $table->timestamps();
         });
     }
@@ -22,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pembayarans');
+        Schema::dropIfExists('pembayaran');
     }
 };

@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notification', function (Blueprint $table) {
-            $table->id();
+        Schema::create('map_lokasi', function (Blueprint $table) {
+            $table->id('map_id');
+            $table->foreignId('laporan_id')->constrained('laporan')->cascadeOnDelete();
+            $table->decimal('latitude', 15, 8);
+            $table->decimal('longitude', 15, 8);
             $table->timestamps();
         });
     }
@@ -22,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notification');
+        Schema::dropIfExists('map_lokasi');
     }
 };

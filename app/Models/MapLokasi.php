@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ulasan extends Model
+class MapLokasi extends Model
 {
     use HasFactory;
-    protected $table = 'ulasan';
+    protected $table = 'map_lokasi';
+    protected $primaryKey = 'map_id';
 }

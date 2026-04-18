@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('laporans', function (Blueprint $table) {
+        Schema::create('laporan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('wilayah_id')->nullable()->constrained('wilayahs')->nullOnDelete();
-            $table->foreignId('kategori_laporan_id')->nullable()->constrained('kategori_laporans')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('user')->nullOnDelete();
+            $table->foreignId('wilayah_id')->nullable()->constrained('wilayah')->nullOnDelete();
+            $table->foreignId('kategori_laporan_id')->nullable()->constrained('kategori_laporan')->nullOnDelete();
             $table->string('judul')->nullable();
             $table->text('deskripsi')->nullable();
             $table->string('alamat')->nullable();
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('laporans');
+        Schema::dropIfExists('laporan');
     }
 };

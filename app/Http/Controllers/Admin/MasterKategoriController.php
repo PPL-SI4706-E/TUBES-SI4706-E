@@ -17,7 +17,7 @@ class MasterKategoriController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nama_kategori' => 'required|string|max:100|unique:kategori_laporans,nama_kategori',
+            'nama_kategori' => 'required|string|max:100|unique:kategori_laporan,nama_kategori',
             'deskripsi'     => 'nullable|string',
             'tarif'         => 'required|numeric|min:0',
             'icon'          => 'nullable|string|max:50',
@@ -38,7 +38,7 @@ class MasterKategoriController extends Controller
     public function update(Request $request, KategoriLaporan $masterKategori)
     {
         $data = $request->validate([
-            'nama_kategori' => 'required|string|max:100|unique:kategori_laporans,nama_kategori,' . $masterKategori->id,
+            'nama_kategori' => 'required|string|max:100|unique:kategori_laporan,nama_kategori,' . $masterKategori->id,
             'deskripsi'     => 'nullable|string',
             'tarif'         => 'required|numeric|min:0',
             'icon'          => 'nullable|string|max:50',
