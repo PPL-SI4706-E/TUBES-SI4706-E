@@ -22,11 +22,11 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => 'required|email|unique:users',
+            'email'      => 'required|email|unique:user',
             'password'   => ['required', Password::min(6)],
             'role'       => 'required|in:admin,petugas,masyarakat',
             'phone'      => 'nullable|string|max:15',
-            'wilayah_id' => 'nullable|exists:wilayahs,id',
+            'wilayah_id' => 'nullable|exists:wilayah,id',
         ], [
             'name.required'     => 'Nama lengkap wajib diisi.',
             'email.required'    => 'Email wajib diisi.',
@@ -46,10 +46,10 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
+            'email'      => 'required|email|unique:user,email,' . $user->id,
             'role'       => 'required|in:admin,petugas,masyarakat',
             'phone'      => 'nullable|string|max:15',
-            'wilayah_id' => 'nullable|exists:wilayahs,id',
+            'wilayah_id' => 'nullable|exists:wilayah,id',
             'is_active'  => 'boolean',
         ]);
 

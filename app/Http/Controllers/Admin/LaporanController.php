@@ -12,6 +12,12 @@ class LaporanController extends Controller
         return view('admin.laporan.index');
     }
 
+    public function peta()
+    {
+        $laporans = \App\Models\Laporan::with(['mapLokasi', 'wilayah', 'kategoriLaporan'])->get();
+        return view('admin.laporan.peta', compact('laporans'));
+    }
+
     public function show($laporan)
     {
         return view('admin.laporan.show', ['id' => $laporan]);

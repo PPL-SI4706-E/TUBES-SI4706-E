@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Beranda')
 
 @section('content')
@@ -81,7 +81,7 @@
                     $loggedUrl = auth()->user()->isAdmin()
                         ? route('admin.dashboard')
                         : (auth()->user()->isPetugas() ? route('petugas.tugas.index') : route('warga.laporan.index'));
-                    $loggedLabel = auth()->user()->isAdmin() ? 'Dashboard' : (auth()->user()->isPetugas() ? 'Tugas Saya' : 'Masuk');
+                    $loggedLabel = auth()->user()->isAdmin() ? 'Dashboard' : (auth()->user()->isPetugas() ? 'Tugas Saya' : 'Laporan Saya');
                 @endphp
                 <a href="{{ $loggedUrl }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">{{ $loggedLabel }}</a>
             @else

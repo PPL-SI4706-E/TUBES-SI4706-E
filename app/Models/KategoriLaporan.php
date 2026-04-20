@@ -10,7 +10,7 @@ class KategoriLaporan extends Model
     use HasFactory;
 
     protected $fillable = ['nama_kategori', 'deskripsi', 'tarif', 'icon', 'is_active'];
-    protected $table = 'kategori_laporans';
+    protected $table = 'kategori_laporan';
 
     protected $casts = [
         'tarif'     => 'decimal:2',
