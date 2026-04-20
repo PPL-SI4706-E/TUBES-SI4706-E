@@ -66,7 +66,15 @@ class LaporanController extends Controller
             'longitude' => $data['longitude'],
         ]);
 
-        return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat!');
+        // AUTOMATIC PAYMENT CREATION (Sinkronisasi Otomatis)
+        \App\Models\Pembayaran::create([
+            'laporan_id' => $laporan->id,
+            'user_id' => auth()->id(),
+            'harga' => 100000, // Nominal default sesuai mockup
+            'status_pembayaran' => 'Menunggu',
+        ]);
+
+        return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.');
     }
 
     public function konfirmasi(Request $r, $id) { return back(); }

@@ -9,4 +9,24 @@ class Pembayaran extends Model
 {
     use HasFactory;
     protected $table = 'pembayaran';
+
+    protected $fillable = [
+        'laporan_id',
+        'user_id',
+        'harga',
+        'metode_pembayaran',
+        'qr_code_generate',
+        'bukti_transaksi',
+        'status_pembayaran',
+    ];
+
+    public function laporan()
+    {
+        return $this->belongsTo(Laporan::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
