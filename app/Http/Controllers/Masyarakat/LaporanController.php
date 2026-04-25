@@ -66,15 +66,29 @@ class LaporanController extends Controller
             'longitude' => $data['longitude'],
         ]);
 
-        // AUTOMATIC PAYMENT CREATION (Sinkronisasi Otomatis)
-        \App\Models\Pembayaran::create([
-            'laporan_id' => $laporan->id,
-            'user_id' => auth()->id(),
-            'harga' => 100000, // Nominal default sesuai mockup
-            'status_pembayaran' => 'Menunggu',
-        ]);
+        $kategori = KategoriLaporan::find($data['kategori_laporan_id']);
+        $harga = $kategori ? $kategori->tarif : 0;
 
-        return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.');
+        if ($harga > 0) {
+            \App\Models\Pembayaran::create([
+                'laporan_id' => $laporan->id,
+                'user_id' => auth()->id(),
+                'harga' => $harga,
+                'status_pembayaran' => 'Menunggu',
+            ]);
+            $msg = 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.';
+        } else {
+            \App\Models\Pembayaran::create([
+                'laporan_id' => $laporan->id,
+                'user_id' => auth()->id(),
+                'harga' => 0,
+                'status_pembayaran' => 'Lunas',
+                'metode_pembayaran' => 'Layanan Gratis'
+            ]);
+            $msg = 'Laporan berhasil dibuat dan langsung masuk tahap validasi karena layanan ini gratis.';
+        }
+
+        return redirect()->route('warga.laporan.index')->with('success', $msg);
     }
 
     public function konfirmasi(Request $r, $id) { return back(); }

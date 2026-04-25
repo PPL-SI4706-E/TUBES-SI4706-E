@@ -64,7 +64,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::get('/',                        'index')->name('index');
         Route::get('/peta',                    'peta')->name('peta');
         Route::get('/{laporan}',               'show')->name('show');
-        Route::post('/{laporan}/validasi',     'validasi')->name('validasi');
+        Route::post('/{laporan}/approve-lapangan', 'approveLapangan')->name('approve-lapangan');
+        Route::post('/{laporan}/approve-virtual',  'approveVirtual')->name('approve-virtual');
+        Route::post('/{laporan}/reject',           'reject')->name('reject');
         Route::post('/{laporan}/assign',       'assign')->name('assign');
     });
 

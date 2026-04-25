@@ -20,8 +20,18 @@ class Laporan extends Model
         'foto', 
         'status', 
         'tanggal_lapor', 
-        'catatan_admin'
+        'catatan_admin',
+        'jenis_penanganan',
+        'solusi',
+        'alasan_penolakan',
+        'validated_by',
+        'validated_at'
     ];
+
+    public function validatedBy()
+    {
+        return $this->belongsTo(User::class, 'validated_by');
+    }
 
     public function mapLokasi()
     {
