@@ -203,7 +203,7 @@
         </div>
 
 
-        <div x-show="openModal"
+        <div x-show="openModal" style="display: none;"
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak
             x-transition>
             <div @click.away="openModal = false"

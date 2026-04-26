@@ -181,7 +181,7 @@
             </table>
         </div>
 
-        <div x-show="openImage" 
+        <div x-show="openImage" style="display: none;"
              class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
              x-transition x-cloak @keydown.escape.window="openImage = false">
             <div @click.away="openImage = false" class="relative max-w-4xl w-full flex flex-col items-center">
