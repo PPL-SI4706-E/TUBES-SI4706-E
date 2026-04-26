@@ -13,41 +13,42 @@
             <p class="text-slate-500">Kelola tagihan biaya perbaikan dan layanan air</p>
         </div>
 
-        <!-- Statistik Tags -->
+
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <div class="flex items-center gap-3 text-slate-400 mb-2">
-                    <i data-lucide="receipt" class="w-4 h-4"></i>
-                    <span class="text-xs font-semibold uppercase tracking-wider">Total Tagihan</span>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                <div class="flex items-center gap-2 text-slate-400 mb-3">
+                    <i data-lucide="receipt" class="w-4 h-4 uppercase"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Tagihan</span>
                 </div>
-                <div class="text-2xl font-bold text-sky-700">{{ $stats['total_tagihan'] }}</div>
+                <div class="text-3xl font-black text-slate-700 leading-none">{{ $stats['total_tagihan'] }}</div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-red-100 shadow-sm">
-                <div class="flex items-center gap-3 text-red-400 mb-2">
+            
+            <div class="bg-[#fff5f5] p-5 rounded-2xl border border-red-50 shadow-sm transition-all hover:shadow-md">
+                <div class="flex items-center gap-2 text-[#e53e3e] mb-3">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                    <span class="text-xs font-semibold uppercase tracking-wider">Belum Dibayar</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 text-red-400">Belum Dibayar</span>
                 </div>
-                <div class="text-2xl font-bold text-red-600">Rp {{ number_format($stats['belum_dibayar'], 0, ',', '.') }}
-                </div>
+                <div class="text-2xl font-black text-[#9b2c2c] leading-none">Rp {{ number_format($stats['belum_dibayar'], 0, ',', '.') }}</div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-amber-100 shadow-sm">
-                <div class="flex items-center gap-3 text-amber-500 mb-2">
+
+            <div class="bg-[#fffaf0] p-5 rounded-2xl border border-amber-50 shadow-sm transition-all hover:shadow-md">
+                <div class="flex items-center gap-2 text-amber-500 mb-3">
                     <i data-lucide="clock" class="w-4 h-4"></i>
-                    <span class="text-xs font-semibold uppercase tracking-wider">Menunggu Verifikasi</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 text-amber-500/70">Menunggu Verifikasi</span>
                 </div>
-                <div class="text-2xl font-bold text-amber-600">{{ $stats['menunggu_verif'] }}</div>
+                <div class="text-3xl font-black text-[#975a16] leading-none">{{ $stats['menunggu_verif'] }}</div>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm">
-                <div class="flex items-center gap-3 text-emerald-500 mb-2">
+
+            <div class="bg-[#f0fff4] p-5 rounded-2xl border border-emerald-50 shadow-sm transition-all hover:shadow-md">
+                <div class="flex items-center gap-2 text-emerald-500 mb-3">
                     <i data-lucide="check-circle" class="w-4 h-4"></i>
-                    <span class="text-xs font-semibold uppercase tracking-wider">Sudah Lunas</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 text-emerald-600/70">Sudah Lunas</span>
                 </div>
-                <div class="text-2xl font-bold text-emerald-600">Rp {{ number_format($stats['sudah_lunas'], 0, ',', '.') }}
-                </div>
+                <div class="text-2xl font-black text-[#22543d] leading-none">Rp {{ number_format($stats['sudah_lunas'], 0, ',', '.') }}</div>
             </div>
         </div>
 
-        <!-- Tagihan Belum Dibayar -->
+
         <div class="mb-8">
             <div class="flex items-center gap-2 mb-4 text-slate-700 font-semibold">
                 <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
@@ -58,50 +59,43 @@
                 <div class="grid grid-cols-1 gap-6">
                     @foreach($tagihanAktif as $tagihan)
                         <div
-                            class="bg-white border border-red-100 rounded-3xl p-8 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300">
-                            <div class="absolute top-0 left-0 w-2 h-full bg-red-500"></div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
+                            class="bg-white border border-red-100 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 group hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300">
+                            <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-3 mb-1">
                                     <span
-                                        class="bg-sky-50 text-sky-600 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest">Tagihan
+                                        class="bg-sky-50 text-sky-600 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shrink-0">Tagihan
                                         #{{ $tagihan->id }}</span>
-                                    <span class="text-slate-300 text-xl font-thin">/</span>
-                                    <span class="text-slate-800 font-bold text-lg">{{ $tagihan->laporan->judul }}</span>
+                                    <span class="text-slate-800 font-bold text-base truncate">{{ $tagihan->laporan->judul }}</span>
                                 </div>
-                                <p class="text-slate-500 text-sm mb-4 leading-relaxed max-w-2xl">
-                                    Biaya perbaikan layanan air untuk laporan <b>#{{ $tagihan->laporan->id }}</b> yang berlokasi di
-                                    <span class="text-slate-600 font-semibold">{{ $tagihan->laporan->alamat }}</span>.
+                                <p class="text-slate-500 text-xs mb-3 leading-relaxed max-w-2xl truncate">
+                                    Biaya perbaikan laporan <b>#{{ $tagihan->laporan->id }}</b> di 
+                                    <span class="text-slate-600 font-semibold">{{ $tagihan->laporan->alamat }}</span>
                                 </p>
-                                <div class="flex items-center gap-6">
-                                    <div class="bg-red-50 px-4 py-2 rounded-2xl border border-red-100 flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm">
-                                            <i data-lucide="clock" class="w-4 h-4"></i>
-                                        </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-red-50/50 px-3 py-1.5 rounded-xl border border-red-100 flex items-center gap-2">
+                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-red-500"></i>
                                         <div>
-                                            <p
-                                                class="text-[10px] text-red-400 font-bold uppercase tracking-wider leading-none mb-1">
-                                                Jatuh Tempo (24 Jam)</p>
-                                            <p class="text-xs font-black text-red-600 tabular-nums">
+                                            <p class="text-[9px] text-red-400 font-bold uppercase leading-none mb-0.5">Jatuh Tempo</p>
+                                            <p class="text-[10px] font-black text-red-600 tabular-nums leading-none">
                                                 {{ $tagihan->created_at->addHours(24)->format('d M, H:i') }} WIB</p>
                                         </div>
                                     </div>
                                     <div class="hidden md:flex flex-col">
-                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status Laporan
-                                        </p>
-                                        <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                                            <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                                            Menunggu Pembayaran
-                                        </span>
-                                    </div>
+                                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Status Laporan
+                                         </p>
+                                         <span class="text-xs font-bold {{ $tagihan->status_pembayaran === 'Ditolak' ? 'text-red-600' : 'text-slate-600' }} flex items-center gap-1.5">
+                                             <div class="w-1.5 h-1.5 rounded-full {{ $tagihan->status_pembayaran === 'Ditolak' ? 'bg-red-500 animate-pulse' : 'bg-amber-500' }}"></div>
+                                             {{ $tagihan->status_pembayaran === 'Ditolak' ? 'Pembayaran Ditolak (Upload Ulang)' : 'Menunggu Pembayaran' }}
+                                         </span>
+                                     </div>
                                 </div>
                             </div>
 
                             <div
-                                class="flex flex-col items-center md:items-end gap-3 w-full md:w-auto shrink-0 bg-slate-50 md:bg-transparent p-6 md:p-0 rounded-3xl">
-                                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-right">Total yang
-                                    harus dibayar:</div>
-                                <div class="text-4xl font-black text-slate-800 mb-2 leading-none">Rp
+                                class="flex flex-col items-center md:items-end gap-2 w-full md:w-auto shrink-0 bg-slate-50 md:bg-transparent p-4 md:p-0 rounded-2xl">
+                                <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider text-right">Total Tagihan:</div>
+                                <div class="text-3xl font-black text-slate-800 mb-1 leading-none">Rp
                                     {{ number_format($tagihan->harga, 0, ',', '.') }}</div>
                                 <button @click="
                                             selectedTagihan = { 
@@ -112,8 +106,8 @@
                                             }; 
                                             openModal = true
                                         "
-                                    class="w-full md:w-auto bg-sky-600 hover:bg-sky-700 text-white font-black py-4 px-10 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg shadow-sky-200 hover:scale-105 active:scale-95">
-                                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                                    class="w-full md:w-auto bg-sky-600 hover:bg-sky-700 text-white font-black py-3 px-8 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-sky-200 hover:scale-105 active:scale-95 text-sm uppercase italic tracking-wider">
+                                    <i data-lucide="wallet" class="w-4 h-4"></i>
                                     BAYAR SEKARANG
                                 </button>
                             </div>
@@ -130,7 +124,7 @@
             @endif
         </div>
 
-        <!-- Riwayat Pembayaran -->
+
         <div>
             <div class="flex items-center gap-2 mb-4 text-slate-700 font-semibold">
                 <i data-lucide="history" class="w-5 h-5 text-sky-500"></i>
@@ -181,10 +175,12 @@
                                                 'Lunas' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
                                                 'Terverifikasi' => 'bg-amber-50 text-amber-600 border-amber-100',
                                                 'Ditolak' => 'bg-red-50 text-red-600 border-red-100',
+                                                'Kadaluarsa' => 'bg-slate-100 text-slate-400 border-slate-200',
                                                 default => 'bg-slate-50 text-slate-600 border-slate-100',
                                             };
                                             $statusLabel = match ($item->status_pembayaran) {
                                                 'Terverifikasi' => 'Proses Verifikasi',
+                                                'Kadaluarsa' => 'Hangus',
                                                 default => $item->status_pembayaran,
                                             };
                                         @endphp
@@ -206,13 +202,13 @@
             </div>
         </div>
 
-        <!-- Modal Pembayaran -->
+
         <div x-show="openModal"
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak
             x-transition>
             <div @click.away="openModal = false"
                 class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-                <!-- Header -->
+
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shadow-sm">
                     <h3 class="font-bold text-slate-800">Pembayaran Laporan #<span
                             x-text="selectedTagihan.laporan_id"></span></h3>
@@ -221,9 +217,9 @@
                     </button>
                 </div>
 
-                <!-- Content -->
+
                 <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                    <!-- Info Nominal -->
+
                     <div
                         class="bg-gradient-to-br from-sky-50 to-white border border-sky-100 rounded-3xl p-6 text-center shadow-sm">
                         <p class="text-[10px] font-bold text-sky-500 uppercase tracking-widest mb-1">Total Pembayaran</p>
@@ -231,7 +227,7 @@
                         <p class="text-[11px] text-sky-400 font-medium px-4" x-text="selectedTagihan.judul"></p>
                     </div>
 
-                    <!-- Rekening / QRIS (Dinamis) -->
+
                     <div class="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 relative overflow-hidden">
                         <div x-show="selectedMetode === 'Transfer Bank'" x-transition>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tujuan Transfer:
@@ -249,7 +245,7 @@
                             </div>
                         </div>
 
-                        <div x-show="selectedMetode === 'QRIS'" x-transition class="text-center">
+                        <div x-show="selectedMetode === 'QRIS / E-Wallet'" x-transition class="text-center">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Scan QRIS
                                 Berikut:</p>
                             <div class="bg-white p-4 rounded-3xl inline-block border border-slate-200 shadow-sm mb-3">
@@ -260,7 +256,7 @@
                                 M-Banking Anda</p>
                         </div>
 
-                        <div x-show="selectedMetode === 'E-Wallet' || selectedMetode === 'Tunai di Kantor'" x-transition
+                        <div x-show="selectedMetode === 'Tunai di Kantor'" x-transition
                             class="py-4 text-center">
                             <div class="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                 <i data-lucide="info" class="w-6 h-6 text-sky-600"></i>
@@ -273,7 +269,7 @@
                     <form :action="'{{ url('warga/pembayaran') }}/' + selectedTagihan.id + '/upload'" method="POST"
                         enctype="multipart/form-data" class="space-y-6">
                         @csrf
-                        <!-- Upload Box (Hidden for Tunai) -->
+
                         <div x-show="selectedMetode !== 'Tunai di Kantor'" x-transition>
                             <div class="flex items-center justify-between mb-3 px-1">
                                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Bukti
@@ -312,7 +308,7 @@
                             </div>
                         </div>
 
-                        <!-- Metode Pembayaran -->
+
                         <div>
                             <label
                                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Metode
@@ -365,7 +361,6 @@
 
 @section('scripts')
     <script>
-        // Initialize Lucide icons after Alpine updates
         document.addEventListener('alpine:initialized', () => {
             lucide.createIcons();
         });

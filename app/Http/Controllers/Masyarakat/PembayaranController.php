@@ -7,36 +7,47 @@ use App\Models\Pembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-
 class PembayaranController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
 
-        // Statistik
+        $expiredQuery = Pembayaran::whereIn('status_pembayaran', ['Menunggu', 'Ditolak'])
+            ->where('created_at', '<', now()->subHours(24));
+
+        $laporanIds = (clone $expiredQuery)->pluck('laporan_id');
+
+        if ($laporanIds->isNotEmpty()) {
+            (clone $expiredQuery)->update(['status_pembayaran' => 'Kadaluarsa']);
+
+            \App\Models\Laporan::whereIn('id', $laporanIds)->update([
+                'status' => 'ditolak',
+                'catatan_admin' => 'Pembayaran Kadaluarsa (Hangus). Silakan buat laporan ulang.'
+            ]);
+        }
+
         $stats = [
             'total_tagihan' => Pembayaran::where('user_id', $user->id)->count(),
-            'belum_dibayar' => Pembayaran::where('user_id', $user->id)->where('status_pembayaran', 'Menunggu')->sum('harga'),
-            'menunggu_verif' => Pembayaran::where('user_id', $user->id)->where('status_pembayaran', 'Terverifikasi')->count(),
-            'sudah_lunas' => Pembayaran::where('user_id', $user->id)->where('status_pembayaran', 'Lunas')->sum('harga'),
+            'belum_dibayar' => Pembayaran::where('user_id', $user->id)
+                ->whereIn('status_pembayaran', ['Menunggu', 'Ditolak'])
+                ->sum('harga'),
+            'menunggu_verif' => Pembayaran::where('user_id', $user->id)
+                ->where('status_pembayaran', 'Terverifikasi')
+                ->count(),
+            'sudah_lunas' => Pembayaran::where('user_id', $user->id)
+                ->where('status_pembayaran', 'Lunas')
+                ->sum('harga'),
         ];
 
-        // Auto-cancel expired payments (lebih dari 24 jam)
-        Pembayaran::where('status_pembayaran', 'Menunggu')
-            ->where('created_at', '<', now()->subHours(24))
-            ->update(['status_pembayaran' => 'Ditolak']);
-
-        // Tagihan Aktif (Menunggu Pembayaran) - Sekarang ambil semua (plural)
         $tagihanAktif = Pembayaran::with('laporan')
             ->where('user_id', $user->id)
-            ->where('status_pembayaran', 'Menunggu')
+            ->whereIn('status_pembayaran', ['Menunggu', 'Ditolak'])
             ->get();
 
-        // Riwayat Pembayaran
         $riwayat = Pembayaran::with('laporan')
             ->where('user_id', $user->id)
-            ->whereIn('status_pembayaran', ['Terverifikasi', 'Lunas', 'Ditolak'])
+            ->whereIn('status_pembayaran', ['Terverifikasi', 'Lunas', 'Kadaluarsa'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
@@ -63,7 +74,6 @@ class PembayaranController extends Controller
         ];
 
         if ($request->hasFile('bukti_transaksi')) {
-            // Hapus file lama jika ada
             if ($pembayaran->bukti_transaksi) {
                 Storage::delete('public/bukti_pembayaran/' . $pembayaran->bukti_transaksi);
             }
