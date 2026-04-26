@@ -17,7 +17,7 @@ class Pembayaran extends Model
         'metode_pembayaran',
         'qr_code_generate',
         'bukti_transaksi',
-        'status_pembayaran',
+        'status_pembayaran', // Menunggu, Terverifikasi, Lunas, Ditolak, Kadaluarsa
     ];
 
     public function laporan()

@@ -48,11 +48,13 @@ class LaporanController extends Controller
             $fotoPath = $r->file('foto')->store('laporans', 'public');
         }
 
+        $kategori = KategoriLaporan::findOrFail($data['kategori_laporan_id']);
+
         $laporan = Laporan::create([
             'user_id' => auth()->id(),
             'wilayah_id' => $data['wilayah_id'],
             'kategori_laporan_id' => $data['kategori_laporan_id'],
-            'judul' => 'Laporan ' . now()->format('YmdHis'), // or nullable
+            'judul' => $kategori->nama_kategori . ' - ' . now()->format('d/m/Y H:i'),
             'deskripsi' => $data['deskripsi'],
             'alamat' => $data['alamat'] ?? '',
             'foto' => $fotoPath,
@@ -70,8 +72,9 @@ class LaporanController extends Controller
         \App\Models\Pembayaran::create([
             'laporan_id' => $laporan->id,
             'user_id' => auth()->id(),
-            'harga' => 100000, // Nominal default sesuai mockup
-            'status_pembayaran' => 'Menunggu',
+            'harga' => $kategori->tarif,
+            'metode_pembayaran' => $kategori->tarif == 0 ? 'Sistem (Gratis)' : null,
+            'status_pembayaran' => $kategori->tarif == 0 ? 'Lunas' : 'Menunggu',
         ]);
 
         return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.');
