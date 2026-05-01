@@ -2,17 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Pengumuman;
+use Illuminate\View\View;
 
 class PublicController extends Controller
 {
-    public function home()
+    public function home(): View
     {
-        return view('public.home');
+        $pengumuman = Pengumuman::query()
+            ->where('is_published', true)
+            ->latest('tanggal_post')
+            ->latest('created_at')
+            ->get();
+
+        $featuredPengumuman = $pengumuman->firstWhere('priority', 'penting') ?? $pengumuman->first();
+        $pengumumanLainnya = $featuredPengumuman
+            ? $pengumuman->where('id', '!=', $featuredPengumuman->id)->values()
+            : collect();
+
+        return view('public.home', compact('featuredPengumuman', 'pengumumanLainnya'));
     }
 
-    public function pengumumanDetail($id)
+    public function pengumumanDetail($id): View
     {
-        return view('public.pengumuman-detail', ['id' => $id]);
+        $pengumuman = Pengumuman::query()
+            ->where('is_published', true)
+            ->findOrFail($id);
+
+        return view('public.pengumuman-detail', compact('pengumuman'));
     }
 }

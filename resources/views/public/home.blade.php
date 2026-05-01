@@ -3,26 +3,15 @@
 
 @section('content')
 @php
-    // Mock data from Figma reference (github.com/rizkymavnsyh/Tirtabantu/src/app/data/mockData.ts)
-    $pengumumanList = [
-        ['id'=>1,'judul'=>'DARURAT: Pemadaman Air Wilayah Cianjur','isi'=>'Sehubungan dengan perbaikan pipa utama distribusi, aliran air PDAM di wilayah Kec. Cianjur akan dihentikan sementara pada tanggal 16-17 Maret 2026 pukul 08.00-17.00 WIB. Posko air darurat tersedia di Balai Desa Sukamaju. Mohon warga mempersiapkan cadangan air.','tgl_posting'=>'2026-03-14','penting'=>true,'kategori'=>'darurat'],
-        ['id'=>2,'judul'=>'Jadwal Pengiriman Tangki Air Darurat - Mekarjaya','isi'=>'Bagi warga Desa Mekarjaya yang terdampak kekeringan, pengiriman tangki air darurat akan dilakukan setiap hari Senin dan Kamis pukul 08.00 WIB di Balai Desa. Silakan bawa wadah masing-masing, maksimal 2 jerigen per KK.','tgl_posting'=>'2026-03-12','penting'=>true,'kategori'=>'jadwal'],
-        ['id'=>3,'judul'=>'Info Tarif Baru Sambungan Air 2026','isi'=>'Mulai April 2026, tarif pemasangan sambungan air baru menjadi Rp 1.500.000,- (sudah termasuk meteran dan pipa 10 meter). Pendaftaran bisa melalui aplikasi TirtaBantu atau kantor PDAM.','tgl_posting'=>'2026-03-10','penting'=>false,'kategori'=>'info'],
-        ['id'=>4,'judul'=>'Himbauan Hemat Air Musim Kemarau','isi'=>'Memasuki musim kemarau 2026, kami menghimbau seluruh warga untuk menghemat penggunaan air. Tips: tutup keran saat menyikat gigi, gunakan air bekas cucian untuk menyiram tanaman, periksa kebocoran pipa secara berkala.','tgl_posting'=>'2026-03-08','penting'=>false,'kategori'=>'info'],
-        ['id'=>5,'judul'=>'Gangguan Air Wilayah Cibadak','isi'=>'Terjadi kerusakan pipa distribusi utama di Kec. Cibadak. Tim teknis sedang melakukan perbaikan. Estimasi air kembali normal dalam 24-48 jam. Kami mohon maaf atas ketidaknyamanan ini.','tgl_posting'=>'2026-03-06','penting'=>true,'kategori'=>'gangguan'],
-    ];
-
     $kategoriIkon = [
-        'darurat'  => 'bg-red-100 text-red-600',
-        'gangguan' => 'bg-amber-100 text-amber-600',
-        'jadwal'   => 'bg-blue-100 text-blue-600',
-        'info'     => 'bg-emerald-100 text-emerald-600',
+        'darurat' => 'bg-red-100 text-red-600',
+        'jadwal' => 'bg-blue-100 text-blue-600',
+        'informasi' => 'bg-emerald-100 text-emerald-600',
     ];
     $kategoriLabel = [
-        'darurat'  => 'DARURAT',
-        'gangguan' => 'GANGGUAN',
-        'jadwal'   => 'JADWAL',
-        'info'     => 'INFORMASI',
+        'darurat' => 'DARURAT',
+        'jadwal' => 'JADWAL',
+        'informasi' => 'INFORMASI',
     ];
 
     $kategoriList = [
@@ -32,9 +21,6 @@
         ['id'=>5,'nama'=>'Pipa Tersumbat',         'deskripsi'=>'Laporan pipa yang tersumbat atau aliran air kecil/mati',       'icon'=>'🚫','tarif'=>35000, 'keterangan_tarif'=>'Biaya jasa pembersihan dan pemeriksaan pipa. Sudah termasuk alat kerja.'],
         ['id'=>6,'nama'=>'Sambungan Baru',         'deskripsi'=>'Permohonan pemasangan sambungan air baru ke rumah',            'icon'=>'🏠','tarif'=>250000,'keterangan_tarif'=>'Biaya survey + pemasangan awal (DP). Total biaya tergantung jarak pipa, dibayar bertahap.'],
     ];
-
-    $featured = collect($pengumumanList)->firstWhere('kategori', 'darurat') ?? collect($pengumumanList)->firstWhere('penting', true);
-    $otherPengumuman = array_slice($pengumumanList, 1);
 
     $fiturList = [
         ['icon'=>'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z','title'=>'Pelaporan Detail','desc'=>'Buat laporan dengan alamat rumah lengkap, koordinat GPS, dan foto bukti. Admin tahu persis lokasinya.','color'=>'bg-blue-100 text-blue-600'],
@@ -141,32 +127,43 @@
                 <p class="text-slate-500 mt-2" style="font-size:0.9rem">Informasi terbaru seputar distribusi air di wilayah Anda</p>
             </div>
 
-            @if($featured)
+            @if($featuredPengumuman)
                 <div class="mb-6">
                     <div class="bg-gradient-to-r from-red-50 to-amber-50 border-2 border-red-200 rounded-2xl p-6 md:p-8">
                         <div class="flex items-center gap-3 mb-3">
                             <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full" style="font-size:0.75rem;font-weight:700">{{ $kategoriLabel[$featured['kategori']] }}</span>
-                            <span class="text-slate-400" style="font-size:0.8rem">{{ $featured['tgl_posting'] }}</span>
+                            <span class="{{ $kategoriIkon[$featuredPengumuman->category] ?? 'bg-slate-100 text-slate-700' }} px-3 py-1 rounded-full" style="font-size:0.75rem;font-weight:700">{{ $kategoriLabel[$featuredPengumuman->category] ?? strtoupper($featuredPengumuman->category) }}</span>
+                            <span class="text-slate-400" style="font-size:0.8rem">{{ optional($featuredPengumuman->tanggal_post)->format('Y-m-d') }}</span>
                         </div>
-                        <h3 class="text-red-800 mb-2" style="font-size:1.15rem;font-weight:700">{{ $featured['judul'] }}</h3>
-                        <p class="text-slate-700" style="font-size:0.9rem;line-height:1.7">{{ $featured['isi'] }}</p>
+                        <h3 class="text-red-800 mb-2" style="font-size:1.15rem;font-weight:700">{{ $featuredPengumuman->judul }}</h3>
+                        <p class="text-slate-700" style="font-size:0.9rem;line-height:1.7">{{ $featuredPengumuman->isi }}</p>
+                        <a href="{{ route('pengumuman.detail', $featuredPengumuman->id) }}" class="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-red-700 hover:text-red-800">
+                            Baca selengkapnya
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
             @endif
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                @foreach($otherPengumuman as $p)
-                    <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5">
+            @if($pengumumanLainnya->isNotEmpty())
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                @foreach($pengumumanLainnya as $p)
+                    <a href="{{ route('pengumuman.detail', $p->id) }}" class="block bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5">
                         <div class="flex items-center gap-2 mb-3">
-                            <span class="{{ $kategoriIkon[$p['kategori']] }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p['kategori']] }}</span>
-                            <span class="text-slate-400 ml-auto" style="font-size:0.75rem">{{ $p['tgl_posting'] }}</span>
+                            <span class="{{ $kategoriIkon[$p->category] ?? 'bg-slate-100 text-slate-700' }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p->category] ?? strtoupper($p->category) }}</span>
+                            <span class="text-slate-400 ml-auto" style="font-size:0.75rem">{{ optional($p->tanggal_post)->format('Y-m-d') }}</span>
                         </div>
-                        <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p['judul'] }}</h3>
-                        <p class="text-slate-600" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
-                    </div>
+                        <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p->judul }}</h3>
+                        <p class="text-slate-600" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p->isi, 120) }}</p>
+                    </a>
                 @endforeach
-            </div>
+                </div>
+            @elseif(!$featuredPengumuman)
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center">
+                    <h3 class="text-slate-700" style="font-size:1.05rem;font-weight:700">Belum ada pengumuman</h3>
+                    <p class="text-slate-500 mt-2" style="font-size:0.9rem">Informasi terbaru akan muncul di sini setelah dipublikasikan oleh admin.</p>
+                </div>
+            @endif
         </div>
     </section>
 

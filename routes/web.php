@@ -87,7 +87,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // TODO: FR-16 — Pengumuman (Sprint 1)
     Route::prefix('pengumuman')->name('pengumuman.')->controller(PengumumanController::class)->group(function () {
         Route::get('/',                    'index')->name('index');
+        Route::get('/create',              'create')->name('create');
         Route::post('/',                   'store')->name('store');
+        Route::get('/{pengumuman}/edit',   'edit')->name('edit');
         Route::put('/{pengumuman}',        'update')->name('update');
         Route::delete('/{pengumuman}',     'destroy')->name('destroy');
     });
