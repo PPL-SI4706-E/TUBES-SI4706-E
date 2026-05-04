@@ -3,14 +3,7 @@
 
 @section('content')
 @php
-    // Mock data from Figma reference (github.com/rizkymavnsyh/Tirtabantu/src/app/data/mockData.ts)
-    $pengumumanList = [
-        ['id'=>1,'judul'=>'DARURAT: Pemadaman Air Wilayah Cianjur','isi'=>'Sehubungan dengan perbaikan pipa utama distribusi, aliran air PDAM di wilayah Kec. Cianjur akan dihentikan sementara pada tanggal 16-17 Maret 2026 pukul 08.00-17.00 WIB. Posko air darurat tersedia di Balai Desa Sukamaju. Mohon warga mempersiapkan cadangan air.','tgl_posting'=>'2026-03-14','penting'=>true,'kategori'=>'darurat'],
-        ['id'=>2,'judul'=>'Jadwal Pengiriman Tangki Air Darurat - Mekarjaya','isi'=>'Bagi warga Desa Mekarjaya yang terdampak kekeringan, pengiriman tangki air darurat akan dilakukan setiap hari Senin dan Kamis pukul 08.00 WIB di Balai Desa. Silakan bawa wadah masing-masing, maksimal 2 jerigen per KK.','tgl_posting'=>'2026-03-12','penting'=>true,'kategori'=>'jadwal'],
-        ['id'=>3,'judul'=>'Info Tarif Baru Sambungan Air 2026','isi'=>'Mulai April 2026, tarif pemasangan sambungan air baru menjadi Rp 1.500.000,- (sudah termasuk meteran dan pipa 10 meter). Pendaftaran bisa melalui aplikasi TirtaBantu atau kantor PDAM.','tgl_posting'=>'2026-03-10','penting'=>false,'kategori'=>'info'],
-        ['id'=>4,'judul'=>'Himbauan Hemat Air Musim Kemarau','isi'=>'Memasuki musim kemarau 2026, kami menghimbau seluruh warga untuk menghemat penggunaan air. Tips: tutup keran saat menyikat gigi, gunakan air bekas cucian untuk menyiram tanaman, periksa kebocoran pipa secara berkala.','tgl_posting'=>'2026-03-08','penting'=>false,'kategori'=>'info'],
-        ['id'=>5,'judul'=>'Gangguan Air Wilayah Cibadak','isi'=>'Terjadi kerusakan pipa distribusi utama di Kec. Cibadak. Tim teknis sedang melakukan perbaikan. Estimasi air kembali normal dalam 24-48 jam. Kami mohon maaf atas ketidaknyamanan ini.','tgl_posting'=>'2026-03-06','penting'=>true,'kategori'=>'gangguan'],
-    ];
+    $pengumumanList = collect($pengumumanList ?? []);
 
     $kategoriIkon = [
         'darurat'  => 'bg-red-100 text-red-600',
@@ -26,15 +19,15 @@
     ];
 
     $kategoriList = [
-        ['id'=>1,'nama'=>'Pipa Bocor',             'deskripsi'=>'Laporan kebocoran pipa distribusi air di area rumah',          'icon'=>'🔧','tarif'=>50000, 'keterangan_tarif'=>'Biaya jasa perbaikan ringan. Jika butuh material tambahan, dikenakan biaya material sesuai kebutuhan.'],
-        ['id'=>2,'nama'=>'Air Keruh / Berbau',     'deskripsi'=>'Laporan kualitas air yang keruh, berbau, atau berubah warna',  'icon'=>'💧','tarif'=>0,     'keterangan_tarif'=>'GRATIS — Pengecekan kualitas air adalah layanan dasar yang disubsidi pemerintah.'],
-        ['id'=>3,'nama'=>'Permintaan Tangki Air',  'deskripsi'=>'Permintaan pasokan air darurat via tangki ke rumah',           'icon'=>'🚛','tarif'=>75000, 'keterangan_tarif'=>'Biaya operasional pengiriman per tangki (5.000 liter). Gratis untuk daerah bencana/darurat.'],
-        ['id'=>5,'nama'=>'Pipa Tersumbat',         'deskripsi'=>'Laporan pipa yang tersumbat atau aliran air kecil/mati',       'icon'=>'🚫','tarif'=>35000, 'keterangan_tarif'=>'Biaya jasa pembersihan dan pemeriksaan pipa. Sudah termasuk alat kerja.'],
-        ['id'=>6,'nama'=>'Sambungan Baru',         'deskripsi'=>'Permohonan pemasangan sambungan air baru ke rumah',            'icon'=>'🏠','tarif'=>250000,'keterangan_tarif'=>'Biaya survey + pemasangan awal (DP). Total biaya tergantung jarak pipa, dibayar bertahap.'],
+        ['id'=>1,'nama'=>'Pipa Bocor','deskripsi'=>'Laporan kebocoran pipa distribusi air di area rumah','icon'=>'🔧','tarif'=>50000,'keterangan_tarif'=>'Biaya jasa perbaikan ringan. Jika butuh material tambahan, dikenakan biaya material sesuai kebutuhan.'],
+        ['id'=>2,'nama'=>'Air Keruh / Berbau','deskripsi'=>'Laporan kualitas air yang keruh, berbau, atau berubah warna','icon'=>'💧','tarif'=>0,'keterangan_tarif'=>'GRATIS - Pengecekan kualitas air adalah layanan dasar yang disubsidi pemerintah.'],
+        ['id'=>3,'nama'=>'Permintaan Tangki Air','deskripsi'=>'Permintaan pasokan air darurat via tangki ke rumah','icon'=>'🚛','tarif'=>75000,'keterangan_tarif'=>'Biaya operasional pengiriman per tangki (5.000 liter). Gratis untuk daerah bencana/darurat.'],
+        ['id'=>5,'nama'=>'Pipa Tersumbat','deskripsi'=>'Laporan pipa yang tersumbat atau aliran air kecil/mati','icon'=>'🚫','tarif'=>35000,'keterangan_tarif'=>'Biaya jasa pembersihan dan pemeriksaan pipa. Sudah termasuk alat kerja.'],
+        ['id'=>6,'nama'=>'Sambungan Baru','deskripsi'=>'Permohonan pemasangan sambungan air baru ke rumah','icon'=>'🏠','tarif'=>250000,'keterangan_tarif'=>'Biaya survey + pemasangan awal (DP). Total biaya tergantung jarak pipa, dibayar bertahap.'],
     ];
 
-    $featured = collect($pengumumanList)->firstWhere('kategori', 'darurat') ?? collect($pengumumanList)->firstWhere('penting', true);
-    $otherPengumuman = array_slice($pengumumanList, 1);
+    $featured = $pengumumanList->firstWhere('kategori', 'darurat') ?? $pengumumanList->firstWhere('penting', true) ?? $pengumumanList->first();
+    $otherPengumuman = $pengumumanList->reject(fn ($item) => $featured && $item['id'] === $featured['id'])->take(4);
 
     $fiturList = [
         ['icon'=>'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z','title'=>'Pelaporan Detail','desc'=>'Buat laporan dengan alamat rumah lengkap, koordinat GPS, dan foto bukti. Admin tahu persis lokasinya.','color'=>'bg-blue-100 text-blue-600'],
@@ -46,21 +39,28 @@
         ['icon'=>'M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z','title'=>'Rating & Ulasan','desc'=>'Beri rating bintang dan ulasan setelah pekerjaan selesai untuk evaluasi kinerja petugas.','color'=>'bg-orange-100 text-orange-600'],
         ['icon'=>'M12 2.69l5.66 5.66a8 8 0 11-11.31 0z','title'=>'Dashboard Analytics','desc'=>'Visualisasi data laporan per bulan, kinerja petugas, dan rekapitulasi pendapatan.','color'=>'bg-sky-100 text-sky-600'],
         ['icon'=>'M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z','title'=>'Pengumuman Publik','desc'=>'Info gangguan distribusi air massal, jadwal pemadaman, dan himbauan bisa dibaca tanpa login.','color'=>'bg-red-100 text-red-600'],
+        ['icon'=>'M8 10h8m-8 4h5m-7 6h12a2 2 0 002-2V8l-4-4H6a2 2 0 00-2 2v12a2 2 0 002 2z','title'=>'Buku Tamu Publik','desc'=>'Pengunjung bisa mengirim testimoni tanpa login, lalu edit atau hapus dalam sesi 5 menit sebelum terkunci.','color'=>'bg-teal-100 text-teal-600'],
     ];
 
     $alurList = [
         ['step'=>'1','title'=>'Masyarakat Melapor','desc'=>'Buat tiket laporan dengan foto, alamat rumah lengkap, dan pin lokasi di peta. Sistem mencatat koordinat otomatis.','color'=>'bg-sky-600'],
-        ['step'=>'2','title'=>'Admin Memvalidasi','desc'=>'Admin memeriksa laporan: apakah perlu turun ke lapangan atau bisa ditangani secara remote (misalnya reset jaringan, info area terdampak). Jika ditolak, ada catatan alasan.','color'=>'bg-blue-600'],
+        ['step'=>'2','title'=>'Admin Memvalidasi','desc'=>'Admin memeriksa laporan: apakah perlu turun ke lapangan atau bisa ditangani secara remote. Jika ditolak, ada catatan alasan.','color'=>'bg-blue-600'],
         ['step'=>'3','title'=>'Penugasan Petugas','desc'=>'Jika perlu turun lapangan, admin menugaskan petugas. Petugas melihat detail masalah, alamat, dan navigasi ke lokasi via peta.','color'=>'bg-violet-600'],
-        ['step'=>'4','title'=>'Petugas Mengerjakan','desc'=>'Petugas update status: Menuju Lokasi → Sedang Dikerjakan → Selesai. Upload foto bukti penyelesaian.','color'=>'bg-emerald-600'],
-        ['step'=>'5','title'=>'Pelanggan Konfirmasi','desc'=>'Pelanggan menerima notifikasi dan diminta mengonfirmasi: SELESAI atau BELUM SELESAI. Jika belum, wajib isi alasan/feedback agar ditindaklanjuti.','color'=>'bg-amber-600'],
+        ['step'=>'4','title'=>'Petugas Mengerjakan','desc'=>'Petugas update status: Menuju Lokasi -> Sedang Dikerjakan -> Selesai. Upload foto bukti penyelesaian.','color'=>'bg-emerald-600'],
+        ['step'=>'5','title'=>'Pelanggan Konfirmasi','desc'=>'Pelanggan menerima notifikasi dan diminta mengonfirmasi selesai atau belum selesai, berikut alasannya bila perlu tindak lanjut.','color'=>'bg-amber-600'],
         ['step'=>'6','title'=>'Pembayaran & Rating','desc'=>'Jika ada biaya, pelanggan bayar via transfer dan upload bukti. Setelah lunas, pelanggan bisa memberi rating bintang dan ulasan.','color'=>'bg-pink-600'],
+    ];
+
+    $testimoniPublik = $testimoniPublik ?? collect();
+    $testimoniSaya = $testimoniSaya ?? collect();
+    $statusTestimoni = [
+        'pending' => ['label' => 'Menunggu Validasi', 'class' => 'bg-amber-100 text-amber-700'],
+        'disetujui' => ['label' => 'Sudah Tayang', 'class' => 'bg-emerald-100 text-emerald-700'],
+        'ditolak' => ['label' => 'Perlu Revisi', 'class' => 'bg-red-100 text-red-700'],
     ];
 @endphp
 
 <div class="min-h-screen bg-gradient-to-b from-sky-50 to-white">
-
-    {{-- ── Navbar ──────────────────────────────────────────────── --}}
     <header class="bg-white/80 backdrop-blur sticky top-0 z-20 border-b border-sky-100">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -71,10 +71,11 @@
             </div>
             <nav class="hidden md:flex items-center gap-6" style="font-size:0.875rem">
                 <a href="#pengumuman" class="text-sky-700 hover:text-sky-900 transition-colors">Pengumuman</a>
-                <a href="#tarif"      class="text-sky-700 hover:text-sky-900 transition-colors">Tarif Layanan</a>
-                <a href="#fitur"      class="text-sky-700 hover:text-sky-900 transition-colors">Fitur</a>
-                <a href="#alur"       class="text-sky-700 hover:text-sky-900 transition-colors">Alur Pelaporan</a>
-                <a href="#kontak"     class="text-sky-700 hover:text-sky-900 transition-colors">Kontak</a>
+                <a href="#tarif" class="text-sky-700 hover:text-sky-900 transition-colors">Tarif Layanan</a>
+                <a href="#fitur" class="text-sky-700 hover:text-sky-900 transition-colors">Fitur</a>
+                <a href="#alur" class="text-sky-700 hover:text-sky-900 transition-colors">Alur Pelaporan</a>
+                <a href="#testimoni" class="text-sky-700 hover:text-sky-900 transition-colors">Testimoni</a>
+                <a href="#kontak" class="text-sky-700 hover:text-sky-900 transition-colors">Kontak</a>
             </nav>
             @auth
                 @php
@@ -90,12 +91,7 @@
         </div>
     </header>
 
-    {{-- ── Hero ───────────────────────────────────────────────── --}}
     <section class="relative overflow-hidden bg-gradient-to-br from-sky-600 via-sky-700 to-sky-800 text-white">
-        <div class="absolute inset-0 opacity-10 pointer-events-none">
-            <div class="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-            <div class="absolute bottom-10 right-10 w-96 h-96 bg-sky-300 rounded-full blur-3xl"></div>
-        </div>
         <div class="max-w-6xl mx-auto px-4 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center relative z-10">
             <div>
                 <div class="inline-flex items-center gap-2 bg-white/15 backdrop-blur rounded-full px-4 py-1.5 mb-6 border border-white/20" style="font-size:0.8rem">
@@ -112,89 +108,77 @@
                     </a>
                     <a href="#fitur" class="border border-white/30 text-white hover:bg-white/10 px-7 py-3 rounded-xl transition-colors backdrop-blur">Pelajari Fitur</a>
                 </div>
-                <div class="flex gap-6 mt-10 pt-8 border-t border-white/15">
-                    @foreach([['150+','Laporan Ditangani'],['95%','Tingkat Penyelesaian'],['3','Petugas Aktif']] as $s)
-                        <div>
-                            <p style="font-size:1.5rem;font-weight:700">{{ $s[0] }}</p>
-                            <p class="text-sky-300" style="font-size:0.75rem">{{ $s[1] }}</p>
-                        </div>
-                    @endforeach
-                </div>
             </div>
             <div class="hidden md:block">
-                <img src="https://images.unsplash.com/photo-1574718944703-2857f03a82b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-                     alt="Air Bersih"
-                     class="rounded-2xl shadow-2xl w-full h-96 object-cover border-4 border-white/20">
+                <img src="https://images.unsplash.com/photo-1574718944703-2857f03a82b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080" alt="Air Bersih" class="rounded-2xl shadow-2xl w-full h-96 object-cover border-4 border-white/20">
             </div>
         </div>
     </section>
 
-    {{-- ── Pengumuman ─────────────────────────────────────────── --}}
     <section id="pengumuman" class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4">
             <div class="text-center mb-10">
-                <div class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 rounded-full px-4 py-1.5 mb-3" style="font-size:0.8rem;font-weight:600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
-                    Info Terkini
-                </div>
+                <div class="inline-flex items-center gap-2 bg-sky-100 text-sky-700 rounded-full px-4 py-1.5 mb-3" style="font-size:0.8rem;font-weight:600">Info Terkini</div>
                 <h2 class="text-sky-900" style="font-size:1.75rem;font-weight:700">Pengumuman &amp; Info Gangguan</h2>
                 <p class="text-slate-500 mt-2" style="font-size:0.9rem">Informasi terbaru seputar distribusi air di wilayah Anda</p>
             </div>
 
             @if($featured)
-                <div class="mb-6">
-                    <div class="bg-gradient-to-r from-red-50 to-amber-50 border-2 border-red-200 rounded-2xl p-6 md:p-8">
-                        <div class="flex items-center gap-3 mb-3">
-                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
-                            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full" style="font-size:0.75rem;font-weight:700">{{ $kategoriLabel[$featured['kategori']] }}</span>
-                            <span class="text-slate-400" style="font-size:0.8rem">{{ $featured['tgl_posting'] }}</span>
-                        </div>
-                        <h3 class="text-red-800 mb-2" style="font-size:1.15rem;font-weight:700">{{ $featured['judul'] }}</h3>
-                        <p class="text-slate-700" style="font-size:0.9rem;line-height:1.7">{{ $featured['isi'] }}</p>
+                <div class="mb-6 bg-gradient-to-r from-red-50 to-amber-50 border-2 border-red-200 rounded-2xl p-6 md:p-8">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full" style="font-size:0.75rem;font-weight:700">{{ $kategoriLabel[$featured['kategori']] }}</span>
+                        @if(!empty($featured['penting']))
+                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full" style="font-size:0.75rem;font-weight:700">PENTING</span>
+                        @endif
+                        <span class="text-slate-400" style="font-size:0.8rem">{{ $featured['tgl_posting'] }}</span>
                     </div>
+                    <h3 class="text-red-800 mb-2" style="font-size:1.15rem;font-weight:700">{{ $featured['judul'] }}</h3>
+                    <p class="text-slate-700 mb-4" style="font-size:0.9rem;line-height:1.7">{{ $featured['isi'] }}</p>
+                    <a href="{{ route('pengumuman.detail', $featured['id']) }}" class="inline-flex items-center gap-2 text-red-700 hover:text-red-900" style="font-size:0.85rem;font-weight:700">
+                        Baca selengkapnya
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
                 </div>
             @endif
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($otherPengumuman as $p)
-                    <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5">
+                    <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="{{ $kategoriIkon[$p['kategori']] }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p['kategori']] }}</span>
+                            @if(!empty($p['penting']))
+                                <span class="bg-amber-100 text-amber-700 px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">PENTING</span>
+                            @endif
                             <span class="text-slate-400 ml-auto" style="font-size:0.75rem">{{ $p['tgl_posting'] }}</span>
                         </div>
                         <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p['judul'] }}</h3>
-                        <p class="text-slate-600" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
+                        <p class="text-slate-600 mb-3" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
+                        <a href="{{ route('pengumuman.detail', $p['id']) }}" class="inline-flex items-center gap-1 text-sky-600 hover:text-sky-800" style="font-size:0.8rem;font-weight:700">
+                            Detail
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 @endforeach
             </div>
         </div>
     </section>
 
-    {{-- ── Tarif Layanan ──────────────────────────────────────── --}}
     <section id="tarif" class="py-16 bg-sky-50/50">
         <div class="max-w-6xl mx-auto px-4">
             <div class="text-center mb-10">
-                <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 mb-3" style="font-size:0.8rem;font-weight:600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                    Transparan &amp; Terjangkau
-                </div>
                 <h2 class="text-sky-900" style="font-size:1.75rem;font-weight:700">Tarif Layanan TirtaBantu</h2>
-                <p class="text-slate-500 mt-2 max-w-2xl mx-auto" style="font-size:0.9rem">Kami berkomitmen menyediakan layanan air bersih yang terjangkau untuk semua lapisan masyarakat. Berikut tarif resmi per jenis layanan — tanpa biaya tersembunyi.</p>
+                <p class="text-slate-500 mt-2 max-w-2xl mx-auto" style="font-size:0.9rem">Kami berkomitmen menyediakan layanan air bersih yang terjangkau untuk semua lapisan masyarakat.</p>
             </div>
-
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($kategoriList as $k)
-                    <div class="bg-white rounded-2xl border-2 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 overflow-hidden {{ $k['tarif'] === 0 ? 'border-emerald-300' : 'border-sky-100' }}">
+                    <div class="bg-white rounded-2xl border-2 shadow-sm overflow-hidden {{ $k['tarif'] === 0 ? 'border-emerald-300' : 'border-sky-100' }}">
                         <div class="px-6 py-4 {{ $k['tarif'] === 0 ? 'bg-gradient-to-r from-emerald-50 to-emerald-100' : 'bg-gradient-to-r from-sky-50 to-sky-100' }}">
                             <div class="flex items-center gap-3 mb-2">
                                 <span style="font-size:1.5rem">{{ $k['icon'] }}</span>
                                 <h3 class="text-sky-800" style="font-size:1rem;font-weight:700">{{ $k['nama'] }}</h3>
                             </div>
                             @if($k['tarif'] === 0)
-                                <div class="flex items-center gap-2">
-                                    <span class="text-emerald-700" style="font-size:1.75rem;font-weight:800">GRATIS</span>
-                                    <span class="bg-emerald-200 text-emerald-800 px-2.5 py-0.5 rounded-full" style="font-size:0.68rem;font-weight:700">DISUBSIDI</span>
-                                </div>
+                                <span class="text-emerald-700" style="font-size:1.75rem;font-weight:800">GRATIS</span>
                             @else
                                 <div class="flex items-baseline gap-1">
                                     <span class="text-sky-500" style="font-size:0.85rem">Rp</span>
@@ -211,40 +195,9 @@
                     </div>
                 @endforeach
             </div>
-
-            <div class="bg-gradient-to-r from-sky-600 to-sky-700 rounded-2xl p-6 md:p-8 text-white">
-                <div class="grid md:grid-cols-3 gap-6 items-center">
-                    <div class="md:col-span-2">
-                        <h3 class="mb-2" style="font-size:1.15rem;font-weight:700">Komitmen Kami: Layanan Terjangkau untuk Semua</h3>
-                        <p class="text-sky-100" style="font-size:0.85rem;line-height:1.7">Tarif TirtaBantu dirancang serendah mungkin karena tujuan utama kami adalah <strong>membantu masyarakat</strong> mendapatkan akses air bersih. Pengecekan kualitas air <strong>gratis</strong>, perbaikan ringan mulai <strong>Rp 35.000</strong>. Untuk daerah bencana/darurat, layanan tangki air <strong>tidak dikenakan biaya</strong>.</p>
-                        <div class="flex flex-wrap gap-3 mt-4">
-                            <div class="bg-white/15 backdrop-blur rounded-lg px-4 py-2 border border-white/20">
-                                <p class="text-sky-200" style="font-size:0.68rem">Mulai dari</p>
-                                <p style="font-size:1.1rem;font-weight:700">Rp 0</p>
-                            </div>
-                            <div class="bg-white/15 backdrop-blur rounded-lg px-4 py-2 border border-white/20">
-                                <p class="text-sky-200" style="font-size:0.68rem">Perbaikan ringan</p>
-                                <p style="font-size:1.1rem;font-weight:700">Rp 35.000</p>
-                            </div>
-                            <div class="bg-white/15 backdrop-blur rounded-lg px-4 py-2 border border-white/20">
-                                <p class="text-sky-200" style="font-size:0.68rem">Bisa bayar</p>
-                                <p style="font-size:1.1rem;font-weight:700">Bertahap</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-center">
-                        <div class="bg-white/10 rounded-xl p-5 backdrop-blur border border-white/20">
-                            <svg class="w-10 h-10 text-emerald-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <p style="font-size:0.85rem;font-weight:600">Tanpa Biaya Tersembunyi</p>
-                            <p class="text-sky-200 mt-1" style="font-size:0.78rem">Semua tarif sudah termasuk jasa petugas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
-    {{-- ── Fitur ──────────────────────────────────────────────── --}}
     <section id="fitur" class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4">
             <div class="text-center mb-10">
@@ -253,7 +206,7 @@
             </div>
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 @foreach($fiturList as $f)
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-sky-100 hover:shadow-md transition-all hover:-translate-y-0.5">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-sky-100">
                         <div class="w-11 h-11 {{ $f['color'] }} rounded-xl flex items-center justify-center mb-4">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $f['icon'] }}"/></svg>
                         </div>
@@ -265,7 +218,6 @@
         </div>
     </section>
 
-    {{-- ── Alur Pelaporan ─────────────────────────────────────── --}}
     <section id="alur" class="py-16 bg-sky-50/50">
         <div class="max-w-5xl mx-auto px-4">
             <div class="text-center mb-12">
@@ -290,102 +242,174 @@
         </div>
     </section>
 
-    {{-- ── Tentang & Kontak ───────────────────────────────────── --}}
+    <section id="testimoni" class="py-16 bg-sky-50/60">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+                <div>
+                    <div class="mb-8">
+                        <div class="inline-flex items-center gap-2 bg-white text-sky-700 rounded-full px-4 py-1.5 mb-3 border border-sky-100" style="font-size:0.8rem;font-weight:600">Buku Tamu / Testimoni Publik</div>
+                        <h2 class="text-sky-900" style="font-size:1.75rem;font-weight:700">Cerita warga tentang layanan TirtaBantu</h2>
+                        <p class="text-slate-500 mt-2 max-w-3xl" style="font-size:0.9rem;line-height:1.7">Pengunjung dapat meninggalkan pesan, saran, atau kesan tanpa login. Testimoni hanya tampil di landing page setelah divalidasi admin, dan pengirim masih bisa mengedit atau menarik kembali pesan selama 5 menit dalam sesi browser yang sama.</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 mb-5">
+                        @forelse($testimoniPublik as $item)
+                            <article class="bg-white rounded-2xl border border-sky-100 shadow-sm p-5 h-full flex flex-col">
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <div>
+                                        <h3 class="text-sky-900" style="font-size:0.95rem;font-weight:700">{{ $item->nama }}</h3>
+                                        <p class="text-slate-400" style="font-size:0.75rem">{{ ($item->validated_at ?? $item->created_at)?->format('d M Y H:i') }}</p>
+                                    </div>
+                                    <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full" style="font-size:0.72rem;font-weight:700">Tervalidasi</span>
+                                </div>
+                                <p class="text-slate-600 flex-1" style="font-size:0.85rem;line-height:1.7">{{ $item->pesan }}</p>
+                            </article>
+                        @empty
+                            <div class="md:col-span-2 bg-white rounded-2xl border border-dashed border-sky-200 p-8 text-center">
+                                <p class="text-sky-900 mb-2" style="font-size:1rem;font-weight:600">Belum ada testimoni yang tayang</p>
+                                <p class="text-slate-500" style="font-size:0.85rem;line-height:1.6">Jadilah pengunjung pertama yang mengisi buku tamu TirtaBantu hari ini.</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    @if($testimoniSaya->isNotEmpty())
+                        <div id="kelola-testimoni" class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6">
+                            <h3 class="text-sky-900 mb-2" style="font-size:1rem;font-weight:700">Kelola testimoni Anda</h3>
+                            <p class="text-slate-500 mb-5" style="font-size:0.83rem;line-height:1.6">Perubahan akan mengembalikan status testimoni ke antrean validasi admin. Hapus tersedia selama sesi 5 menit masih aktif.</p>
+                            <div class="space-y-4">
+                                @foreach($testimoniSaya as $item)
+                                    @php
+                                        $statusMeta = $statusTestimoni[$item->status_validasi] ?? $statusTestimoni['pending'];
+                                        $remainingMinutes = $item->editable_until?->isFuture() ? ceil(now()->diffInSeconds($item->editable_until) / 60) : 0;
+                                    @endphp
+                                    <div class="rounded-2xl border border-sky-100 p-4" x-data="{ editing: false }">
+                                        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                                            <div>
+                                                <p class="text-sky-900" style="font-size:0.95rem;font-weight:700">{{ $item->nama }}</p>
+                                                <p class="text-slate-400" style="font-size:0.75rem">{{ $item->created_at?->format('d M Y H:i') }}</p>
+                                            </div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="{{ $statusMeta['class'] }} px-3 py-1 rounded-full" style="font-size:0.72rem;font-weight:700">{{ $statusMeta['label'] }}</span>
+                                                <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full" style="font-size:0.72rem;font-weight:700">{{ $item->isEditable() ? 'Sisa ' . $remainingMinutes . ' menit' : 'Sesi edit berakhir' }}</span>
+                                            </div>
+                                        </div>
+                                        <div x-show="!editing" x-cloak>
+                                            @if($item->email)
+                                                <p class="text-slate-500 mb-2" style="font-size:0.8rem">{{ $item->email }}</p>
+                                            @endif
+                                            <p class="text-slate-600 mb-4" style="font-size:0.85rem;line-height:1.7">{{ $item->pesan }}</p>
+                                            @if($item->isEditable())
+                                                <div class="flex flex-wrap gap-2">
+                                                    <button type="button" @click="editing = true" class="px-4 py-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700 transition-colors" style="font-size:0.83rem;font-weight:600">Edit</button>
+                                                    <form method="POST" action="{{ route('testimoni.destroy', $item) }}" onsubmit="return confirm('Hapus testimoni ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors" style="font-size:0.83rem;font-weight:600">Hapus</button>
+                                                    </form>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @if($item->isEditable())
+                                            <form x-show="editing" x-cloak method="POST" action="{{ route('testimoni.update', $item) }}" class="space-y-3">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="grid md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label class="block text-slate-600 mb-1" style="font-size:0.78rem;font-weight:600">Nama</label>
+                                                        <input type="text" name="nama" value="{{ old('nama', $item->nama) }}" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200" required>
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-slate-600 mb-1" style="font-size:0.78rem;font-weight:600">Email (opsional)</label>
+                                                        <input type="email" name="email" value="{{ old('email', $item->email) }}" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-slate-600 mb-1" style="font-size:0.78rem;font-weight:600">Pesan Testimoni</label>
+                                                    <textarea name="pesan" rows="4" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200" required>{{ old('pesan', $item->pesan) }}</textarea>
+                                                </div>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <button type="submit" class="px-4 py-2 rounded-xl bg-sky-600 text-white hover:bg-sky-700 transition-colors" style="font-size:0.83rem;font-weight:600">Simpan</button>
+                                                    <button type="button" @click="editing = false" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors" style="font-size:0.83rem;font-weight:600">Batal</button>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="bg-white rounded-2xl border border-sky-100 shadow-sm p-6 lg:sticky lg:top-24">
+                    <h3 class="text-sky-900 mb-2" style="font-size:1.2rem;font-weight:700">Isi buku tamu publik</h3>
+                    <p class="text-slate-500 mb-5" style="font-size:0.83rem;line-height:1.6">Nama dan pesan wajib diisi. Email opsional bila Anda ingin dihubungi kembali terkait masukan yang diberikan.</p>
+                    <form method="POST" action="{{ route('testimoni.store') }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-slate-600 mb-1.5" style="font-size:0.78rem;font-weight:600">Nama</label>
+                            <input type="text" name="nama" value="{{ old('nama') }}" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200" required>
+                            @error('nama')<p class="text-red-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1.5" style="font-size:0.78rem;font-weight:600">Email (opsional)</label>
+                            <input type="email" name="email" value="{{ old('email') }}" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                            @error('email')<p class="text-red-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-slate-600 mb-1.5" style="font-size:0.78rem;font-weight:600">Pesan Testimoni</label>
+                            <textarea name="pesan" rows="5" class="w-full rounded-xl border border-sky-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-200" required>{{ old('pesan') }}</textarea>
+                            @error('pesan')<p class="text-red-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="rounded-xl bg-sky-50 border border-sky-100 p-4">
+                            <ul class="space-y-2 text-slate-600" style="font-size:0.8rem;line-height:1.6">
+                                <li>Testimoni tayang setelah divalidasi admin.</li>
+                                <li>Edit dan hapus tersedia dalam 5 menit setelah kirim.</li>
+                                <li>Perubahan isi pesan akan masuk antrean validasi lagi.</li>
+                            </ul>
+                        </div>
+                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl transition-colors shadow-sm" style="font-size:0.9rem;font-weight:700">Kirim Testimoni</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="kontak" class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4">
             <div class="grid md:grid-cols-2 gap-8">
                 <div class="bg-white rounded-2xl p-8 border border-sky-100 shadow-sm">
                     <h3 class="text-sky-900 mb-4" style="font-size:1.25rem;font-weight:700">Tentang TirtaBantu</h3>
-                    <p class="text-slate-600 mb-4" style="font-size:0.9rem;line-height:1.7">TirtaBantu adalah aplikasi web manajemen pelaporan dan distribusi air bersih yang dikembangkan untuk mendukung <strong>SDG Poin 6</strong> - Air Bersih dan Sanitasi Layak.</p>
+                    <p class="text-slate-600 mb-4" style="font-size:0.9rem;line-height:1.7">TirtaBantu adalah aplikasi web manajemen pelaporan dan distribusi air bersih yang dikembangkan untuk mendukung SDG Poin 6 - Air Bersih dan Sanitasi Layak.</p>
                     <p class="text-slate-600 mb-4" style="font-size:0.9rem;line-height:1.7">Platform ini menjembatani masyarakat, petugas lapangan, dan pengelola PDAM dengan sistem yang transparan, terukur, dan terdokumentasi.</p>
-                    <div class="bg-sky-50 rounded-xl p-4">
-                        <p class="text-sky-800 mb-2" style="font-size:0.85rem;font-weight:600">Wilayah Layanan Aktif:</p>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach(['Kec. Cianjur','Kec. Cibadak','Kec. Sumedang','Kec. Cipanas','Kec. Bandung Selatan'] as $w)
-                                <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full" style="font-size:0.75rem">{{ $w }}</span>
-                            @endforeach
-                        </div>
-                    </div>
                 </div>
-
                 <div class="bg-white rounded-2xl p-8 border border-sky-100 shadow-sm">
                     <h3 class="text-sky-900 mb-4" style="font-size:1.25rem;font-weight:700">Hubungi Kami</h3>
                     <div class="space-y-4">
-                        <div class="flex items-start gap-4 p-4 bg-sky-50 rounded-xl">
-                            <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Kantor PDAM TirtaBantu</p>
-                                <p class="text-slate-500" style="font-size:0.83rem">Jl. Raya Cianjur No. 100, Kec. Cianjur, Jawa Barat 43211</p>
-                            </div>
+                        <div class="p-4 bg-sky-50 rounded-xl">
+                            <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Kantor PDAM TirtaBantu</p>
+                            <p class="text-slate-500" style="font-size:0.83rem">Jl. Raya Cianjur No. 100, Kec. Cianjur, Jawa Barat 43211</p>
                         </div>
-                        <div class="flex items-start gap-4 p-4 bg-sky-50 rounded-xl">
-                            <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Telepon &amp; WhatsApp</p>
-                                <p class="text-slate-500" style="font-size:0.83rem">(0263) 123-456 | WA: 0812-3456-7890</p>
-                                <p class="text-slate-400" style="font-size:0.75rem">Senin - Jumat, 08.00 - 16.00 WIB</p>
-                            </div>
+                        <div class="p-4 bg-sky-50 rounded-xl">
+                            <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Telepon &amp; WhatsApp</p>
+                            <p class="text-slate-500" style="font-size:0.83rem">(0263) 123-456 | WA: 0812-3456-7890</p>
                         </div>
-                        <div class="flex items-start gap-4 p-4 bg-sky-50 rounded-xl">
-                            <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Email</p>
-                                <p class="text-slate-500" style="font-size:0.83rem">cs@tirtabantu.id</p>
-                            </div>
+                        <div class="p-4 bg-sky-50 rounded-xl">
+                            <p class="text-sky-800" style="font-size:0.85rem;font-weight:600">Email</p>
+                            <p class="text-slate-500" style="font-size:0.83rem">cs@tirtabantu.id</p>
                         </div>
                     </div>
                     <div class="mt-6">
-                        <a href="{{ route('register') }}" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md">
-                            Masuk ke Sistem
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
+                        <a href="{{ route('register') }}" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md">Masuk ke Sistem</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- ── Footer ─────────────────────────────────────────────── --}}
     <footer class="bg-sky-900 text-white/70 py-10">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-3">
-                        <svg class="w-5 h-5 text-sky-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
-                        <span class="text-white" style="font-weight:700">TirtaBantu</span>
-                    </div>
-                    <p style="font-size:0.8rem;line-height:1.6">Sistem Informasi Manajemen Pelaporan dan Distribusi Air Bersih untuk masyarakat Indonesia.</p>
-                </div>
-                <div>
-                    <p class="text-white mb-3" style="font-size:0.85rem;font-weight:600">Layanan</p>
-                    <ul class="space-y-1.5" style="font-size:0.8rem">
-                        <li>Laporan Pipa Bocor</li>
-                        <li>Permintaan Tangki Air</li>
-                        <li>Cek Kualitas Air</li>
-                        <li>Sambungan Baru</li>
-                    </ul>
-                </div>
-                <div>
-                    <p class="text-white mb-3" style="font-size:0.85rem;font-weight:600">Tautan</p>
-                    <ul class="space-y-1.5" style="font-size:0.8rem">
-                        <li><a href="#pengumuman" class="hover:text-white transition-colors">Pengumuman</a></li>
-                        <li><a href="#fitur"      class="hover:text-white transition-colors">Fitur</a></li>
-                        <li><a href="#alur"       class="hover:text-white transition-colors">Alur Pelaporan</a></li>
-                        <li><a href="#kontak"     class="hover:text-white transition-colors">Kontak</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="border-t border-white/10 pt-6 text-center">
-                <p style="font-size:0.75rem">&copy; {{ date('Y') }} TirtaBantu. Mendukung SDG 6 - Air Bersih dan Sanitasi Layak untuk Semua.</p>
-            </div>
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p style="font-size:0.75rem">&copy; {{ date('Y') }} TirtaBantu. Mendukung SDG 6 - Air Bersih dan Sanitasi Layak untuk Semua.</p>
         </div>
     </footer>
-
 </div>
 @endsection

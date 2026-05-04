@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MasterKategoriController;
 use App\Http\Controllers\Admin\MasterWilayahController;
 use App\Http\Controllers\Admin\PembayaranController as AdminPembayaranController;
 use App\Http\Controllers\Admin\PengumumanController;
+use App\Http\Controllers\Admin\TestimoniPublikController as AdminTestimoniPublikController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Masyarakat\LaporanController as WargaLaporanController;
@@ -15,11 +16,15 @@ use App\Http\Controllers\Masyarakat\PembayaranController as WargaPembayaranContr
 use App\Http\Controllers\Masyarakat\UlasanController;
 use App\Http\Controllers\Petugas\TugasController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\PublicTestimoniController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public (tanpa login) ──────────────────────────────────────────────────────
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/pengumuman/{id}', [PublicController::class, 'pengumumanDetail'])->name('pengumuman.detail');
+Route::post('/testimoni', [PublicTestimoniController::class, 'store'])->name('testimoni.store');
+Route::put('/testimoni/{testimoni}', [PublicTestimoniController::class, 'update'])->name('testimoni.update');
+Route::delete('/testimoni/{testimoni}', [PublicTestimoniController::class, 'destroy'])->name('testimoni.destroy');
 
 // ── Auth — FR-03 | PB3 ────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -89,6 +94,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::post('/',                   'store')->name('store');
         Route::put('/{pengumuman}',        'update')->name('update');
         Route::delete('/{pengumuman}',     'destroy')->name('destroy');
+    });
+
+    Route::prefix('testimoni')->name('testimoni.')->controller(AdminTestimoniPublikController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::patch('/{testimoni}/status', 'updateStatus')->name('update-status');
+        Route::delete('/{testimoni}', 'destroy')->name('destroy');
     });
 });
 

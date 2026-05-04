@@ -30,6 +30,7 @@
         <nav class="flex-1 overflow-y-auto py-3 text-sm">
             @php
                 $navItems = [
+<<<<<<< Updated upstream
                     ['route' => 'admin.dashboard',            'label' => 'Dashboard',          'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
                     ['route' => 'admin.laporan.index',        'label' => 'Kelola Laporan',     'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
                     ['route' => 'admin.master-wilayah.index', 'label' => 'Master Wilayah',     'icon' => 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'],
@@ -38,18 +39,43 @@
                     ['route' => 'admin.kinerja.index',        'label' => 'Kinerja Petugas',    'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
                     ['route' => 'admin.pembayaran.index',     'label' => 'Kelola Pembayaran',  'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
                     ['route' => 'admin.pengumuman.index',     'label' => 'Pengumuman',         'icon' => 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z'],
+=======
+                    ['route' => 'admin.dashboard',            'label' => 'Dashboard',          'icon' => 'layout-dashboard'],
+                    ['route' => 'admin.laporan.peta',         'label' => 'Peta Laporan',       'icon' => 'map', 'active' => 'admin.laporan.peta'],
+                    ['route' => 'admin.laporan.index',        'label' => 'Kelola Laporan',     'icon' => 'file-text', 'active' => ['admin.laporan.index', 'admin.laporan.show']],
+                    ['route' => 'admin.master-kategori.index','label' => 'Master Kategori',    'icon' => 'tag'],
+                    ['route' => 'admin.master-wilayah.index', 'label' => 'Master Wilayah',     'icon' => 'map-pin'],
+                    ['route' => 'admin.users.index',          'label' => 'Manajemen Pengguna', 'icon' => 'users'],
+                    ['route' => 'admin.pembayaran.index',     'label' => 'Kelola Pembayaran',  'icon' => 'credit-card'],
+                    ['route' => 'admin.kinerja.index',        'label' => 'Kinerja Petugas',    'icon' => 'bar-chart-3'],
+                    ['route' => 'admin.pengumuman.index',     'label' => 'Pengumuman',         'icon' => 'megaphone'],
+                    ['route' => 'admin.testimoni.index',      'label' => 'Testimoni Publik',   'icon' => 'messages-square'],
+>>>>>>> Stashed changes
                 ];
             @endphp
 
             @foreach($navItems as $item)
                 @php $active = request()->routeIs(rtrim($item['route'], '.index') . '*'); @endphp
                 <a href="{{ route($item['route']) }}"
+<<<<<<< Updated upstream
                    class="flex items-center gap-3 px-5 py-2.5 transition
                           {{ $active ? 'bg-sky-600 text-white' : 'hover:bg-slate-800 hover:text-white' }}">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                     </svg>
                     <span class="truncate">{{ $item['label'] }}</span>
+=======
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
+                          {{ $active ? 'bg-white/15 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white/90' }}"
+                   style="font-size:0.85rem">
+                    <i data-lucide="{{ $item['icon'] }}" class="w-[18px] h-[18px] shrink-0"></i>
+                    <span>{{ $item['label'] }}</span>
+                    @if($item['route'] === 'admin.testimoni.index' && ($pendingTestimoniPublikCount ?? 0) > 0)
+                        <span class="ml-auto bg-red-500 text-white min-w-[1.4rem] h-5 px-1.5 rounded-full inline-flex items-center justify-center" style="font-size:0.7rem;font-weight:700;">
+                            {{ $pendingTestimoniPublikCount }}
+                        </span>
+                    @endif
+>>>>>>> Stashed changes
                 </a>
             @endforeach
         </nav>

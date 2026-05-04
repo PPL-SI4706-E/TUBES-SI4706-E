@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\TestimoniPublik;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('layouts.admin', function ($view) {
+            $view->with('pendingTestimoniPublikCount', TestimoniPublik::where('status_validasi', 'pending')->count());
+        });
     }
 }

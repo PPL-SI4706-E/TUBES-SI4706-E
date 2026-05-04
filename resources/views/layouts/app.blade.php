@@ -17,6 +17,22 @@
 <body class="bg-white text-slate-800 antialiased min-h-screen flex flex-col">
 
     <main class="flex-1">
+        @if(session('success'))
+            <div class="max-w-6xl mx-auto px-4 pt-4">
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm">
+                    {{ session('success') }}
+                </div>
+            </div>
+        @endif
+
+        @if($errors->has('testimoni'))
+            <div class="max-w-6xl mx-auto px-4 pt-4">
+                <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm">
+                    {{ $errors->first('testimoni') }}
+                </div>
+            </div>
+        @endif
+
         @yield('content')
     </main>
 
