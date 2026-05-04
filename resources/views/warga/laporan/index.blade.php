@@ -9,6 +9,13 @@
     <h1 class="text-sky-900 mb-1" style="font-size:1.5rem;font-weight:700">Riwayat Laporan</h1>
     <p class="text-slate-500 mb-6" style="font-size:0.85rem">Pantau status laporan Anda. Konfirmasi penyelesaian dan berikan feedback.</p>
 
+    @if(session('success'))
+        <div class="bg-emerald-50 text-emerald-600 rounded-lg p-4 mb-6 shadow-sm border border-emerald-100 flex items-center gap-3">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span style="font-size:0.9rem;font-weight:600">{{ session('success') }}</span>
+        </div>
+    @endif
+
     {{-- Summary Cards --}}
     @php
         $total = $laporans->count();

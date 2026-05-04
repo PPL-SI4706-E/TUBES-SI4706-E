@@ -224,7 +224,14 @@ function laporanForm() {
                         this.map.setView([this.form.lat, this.form.lng], 15);
                         this.mapReady = true;
                     },
-                    () => alert('Gagal mendapatkan lokasi. Silakan pin manual di peta.')
+                    (error) => {
+                        let errMsg = "Gagal mendapatkan lokasi.\n";
+                        if(error.code == 1) errMsg += "Penyebab: Akses lokasi DITOLAK oleh browser atau pengaturan Windows Anda.";
+                        else if(error.code == 2) errMsg += "Penyebab: Sinyal lokasi tidak tersedia di perangkat ini (Position Unavailable).";
+                        else if(error.code == 3) errMsg += "Penyebab: Waktu permintaan lokasi habis (Timeout).";
+                        alert(errMsg + "\n\nSilakan pin manual di peta untuk sementara waktu.");
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             }
         },

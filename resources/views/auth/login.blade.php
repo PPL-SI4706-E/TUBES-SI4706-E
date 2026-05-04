@@ -18,6 +18,13 @@
             <h2 class="text-sky-900 mb-1 text-center" style="font-size:1.35rem;font-weight:700">Masuk ke Sistem</h2>
             <p class="text-slate-500 text-center mb-6" style="font-size:0.85rem">Silakan login dengan akun Anda</p>
 
+            @if(session('success'))
+                <div class="bg-emerald-50 text-emerald-600 rounded-lg p-3 mb-4 flex items-center gap-2" style="font-size:0.85rem">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    {{ session('success') }}
+                </div>
+            @endif
+
             @if($errors->any())
                 <div class="bg-red-50 text-red-600 rounded-lg p-3 mb-4 flex items-center gap-2" style="font-size:0.85rem">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/></svg>
