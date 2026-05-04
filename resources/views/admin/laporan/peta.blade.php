@@ -2,8 +2,8 @@
 @section('title', 'Peta Laporan')
 
 @section('content')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 
 <div x-data="petaLaporan()" x-init="initMap()">
     <h1 class="text-sky-900 mb-1" style="font-size: 1.5rem; font-weight: 700;">Peta Laporan</h1>
@@ -58,7 +58,7 @@
                                 <p class="text-slate-400" style="font-size: 0.75rem;">
                                     <span x-text="report.kategori_laporan ? report.kategori_laporan.icon + ' ' + report.kategori_laporan.nama_kategori : '📋 Umum'"></span> | 
                                     <span x-text="report.user ? report.user.name : 'Anonim'"></span> | 
-                                    <span x-text="parseFloat(report.map_lokasi.latitude).toFixed(4)"></span>, <span x-text="parseFloat(report.map_lokasi.longitude).toFixed(4)"></span>
+                                    <span x-text="report.map_lokasi ? parseFloat(report.map_lokasi.latitude).toFixed(4) + ', ' + parseFloat(report.map_lokasi.longitude).toFixed(4) : 'Lokasi tidak tersedia'"></span>
                                 </p>
                             </div>
                         </div>
@@ -76,10 +76,11 @@
 </div>
 
 <script>
+window.adminMapInstance = null;
+window.adminMarkersLayer = [];
+
 function petaLaporan() {
     return {
-        map: null,
-        markers: [],
         filterStatus: 'semua',
         allReports: @json($laporans),
         filteredReports: [],
@@ -93,32 +94,47 @@ function petaLaporan() {
         initMap() {
             this.filteredReports = this.allReports;
             
-            this.$nextTick(() => {
-                this.map = L.map('map').setView([-6.9175, 107.6191], 9);
+            setTimeout(() => {
+                if (window.adminMapInstance) {
+                    window.adminMapInstance.off();
+                    window.adminMapInstance.remove();
+                }
+                
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer._leaflet_id = null;
+                }
+                
+                window.adminMapInstance = L.map('map').setView([-6.9175, 107.6191], 9);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    attribution: '&copy; OpenStreetMap contributors',
                     maxZoom: 19
-                }).addTo(this.map);
+                }).addTo(window.adminMapInstance);
 
                 this.renderMarkers();
                 
-                if (this.markers.length > 0) {
-                    const group = new L.featureGroup(this.markers);
-                    this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+                if (window.adminMarkersLayer.length > 0) {
+                    const group = new L.featureGroup(window.adminMarkersLayer);
+                    window.adminMapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
                 }
                 
-                setTimeout(() => this.map.invalidateSize(), 500);
-            });
+                window.adminMapInstance.invalidateSize();
+            }, 100);
         },
         renderMarkers() {
+            if (!window.adminMapInstance) return;
+            
             // Clear existing markers
-            this.markers.forEach(m => this.map.removeLayer(m));
-            this.markers = [];
+            window.adminMarkersLayer.forEach(m => window.adminMapInstance.removeLayer(m));
+            window.adminMarkersLayer = [];
 
             this.filteredReports.forEach(report => {
-                if (report.map_lokasi) {
-                    const lat = report.map_lokasi.latitude;
-                    const lng = report.map_lokasi.longitude;
+                if (report.map_lokasi && report.map_lokasi.latitude && report.map_lokasi.longitude) {
+                    const lat = parseFloat(report.map_lokasi.latitude);
+                    const lng = parseFloat(report.map_lokasi.longitude);
+                    
+                    // Prevent Leaflet crash if coordinates are invalid
+                    if (isNaN(lat) || isNaN(lng)) return;
                     
                     let markerColor = 'blue';
                     if (report.status === 'pending') markerColor = 'red';
@@ -147,8 +163,12 @@ function petaLaporan() {
                         </div>
                     `;
 
-                    const marker = L.marker([lat, lng], { icon: customIcon }).addTo(this.map).bindPopup(popupContent);
-                    this.markers.push(marker);
+                    try {
+                        const marker = L.marker([lat, lng], { icon: customIcon }).addTo(window.adminMapInstance).bindPopup(popupContent);
+                        window.adminMarkersLayer.push(marker);
+                    } catch (e) {
+                        console.error("Error adding marker for report", report.id, e);
+                    }
                 }
             });
         },
@@ -160,18 +180,25 @@ function petaLaporan() {
             }
             this.renderMarkers();
             
-            if (this.markers.length > 0) {
-                const group = new L.featureGroup(this.markers);
-                this.map.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 15 });
+            if (window.adminMarkersLayer.length > 0 && window.adminMapInstance) {
+                const group = new L.featureGroup(window.adminMarkersLayer);
+                window.adminMapInstance.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 15 });
             }
         },
         zoomToReport(report) {
-            if (report.map_lokasi) {
-                this.map.setView([report.map_lokasi.latitude, report.map_lokasi.longitude], 16);
+            if (report.map_lokasi && window.adminMapInstance) {
+                const lat = parseFloat(report.map_lokasi.latitude);
+                const lng = parseFloat(report.map_lokasi.longitude);
+                
+                if (isNaN(lat) || isNaN(lng)) return;
+                
+                window.adminMapInstance.setView([lat, lng], 16);
+                
                 // Find and open marker popup
-                const marker = this.markers.find(m => {
+                const marker = window.adminMarkersLayer.find(m => {
                     const pos = m.getLatLng();
-                    return pos.lat == report.map_lokasi.latitude && pos.lng == report.map_lokasi.longitude;
+                    // using small epsilon for float comparison
+                    return Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001;
                 });
                 if (marker) marker.openPopup();
             }
