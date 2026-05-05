@@ -81,9 +81,15 @@
                         : (auth()->user()->isPetugas() ? route('petugas.tugas.index') : route('warga.laporan.index'));
                     $loggedLabel = auth()->user()->isAdmin() ? 'Dashboard' : (auth()->user()->isPetugas() ? 'Tugas Saya' : 'Laporan Saya');
                 @endphp
-                <a href="{{ $loggedUrl }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">{{ $loggedLabel }}</a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ $loggedUrl }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">{{ $loggedLabel }}</a>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Logout</button>
+                    </form>
+                </div>
             @else
-                <a href="{{ route('register') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
+                <a href="{{ route('login') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
             @endauth
         </div>
     </header>
@@ -307,128 +313,36 @@
                 <p class="text-slate-500 mt-2 max-w-2xl mx-auto" style="font-size:0.9rem">Pengunjung bisa membagikan kesan, saran, atau pengalaman layanan. Semua pesan diverifikasi admin terlebih dahulu sebelum ditampilkan di beranda.</p>
             </div>
 
-            <div class="grid lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
-                <div class="space-y-6">
-                    <div class="grid md:grid-cols-2 gap-5">
-                        @forelse($approvedTestimonials as $testimonial)
-                            <article class="bg-white rounded-2xl border border-sky-100 p-6 shadow-sm hover:shadow-md transition-all">
-                                <div class="flex items-center justify-between gap-3 mb-4">
-                                    <div>
-                                        <h3 class="text-sky-900" style="font-size:0.98rem;font-weight:700">{{ $testimonial->nama }}</h3>
-                                        <p class="text-slate-400" style="font-size:0.75rem">{{ optional($testimonial->approved_at)->format('d M Y H:i') }}</p>
-                                    </div>
-                                    <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center" style="font-size:1.1rem;font-weight:700">
-                                        {{ strtoupper(substr($testimonial->nama, 0, 1)) }}
-                                    </div>
-                                </div>
-                                <p class="text-slate-600" style="font-size:0.88rem;line-height:1.75">{{ $testimonial->pesan }}</p>
-                            </article>
-                        @empty
-                            <div class="md:col-span-2 bg-white rounded-2xl border border-dashed border-sky-200 p-8 text-center">
-                                <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada testimoni yang tayang</p>
-                                <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Jadilah pengunjung pertama yang meninggalkan kesan untuk TirtaBantu. Pesan Anda akan tampil setelah divalidasi admin.</p>
-                            </div>
-                        @endforelse
-                    </div>
-
-                    @if($myTestimonial)
-                        @php
-                            $canEditMyTestimonial = now()->lte($myTestimonial->editable_until);
-                            $statusClasses = [
-                                'pending' => 'bg-amber-100 text-amber-700',
-                                'approved' => 'bg-emerald-100 text-emerald-700',
-                                'rejected' => 'bg-rose-100 text-rose-700',
-                            ];
-                        @endphp
-                        <div id="testimoni-saya" class="bg-sky-900 text-white rounded-2xl p-6 shadow-lg">
-                            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="grid md:grid-cols-2 gap-5">
+                    @forelse($approvedTestimonials as $testimonial)
+                        <article class="bg-white rounded-2xl border border-sky-100 p-6 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between gap-3 mb-4">
                                 <div>
-                                    <p class="text-sky-200 mb-1" style="font-size:0.78rem;font-weight:600">Status kiriman Anda</p>
-                                    <h3 style="font-size:1.1rem;font-weight:700">Testimoni Anda sudah tercatat</h3>
+                                    <h3 class="text-sky-900" style="font-size:0.98rem;font-weight:700">{{ $testimonial->nama }}</h3>
+                                    <p class="text-slate-400" style="font-size:0.75rem">{{ optional($testimonial->approved_at)->format('d M Y H:i') }}</p>
                                 </div>
-                                <span class="px-3 py-1 rounded-full {{ $statusClasses[$myTestimonial->status] ?? 'bg-white/20 text-white' }}" style="font-size:0.72rem;font-weight:700">
-                                    {{ strtoupper($myTestimonial->status) }}
-                                </span>
-                            </div>
-                            <div class="grid md:grid-cols-[1fr_auto] gap-5 items-start">
-                                <div>
-                                    <p class="text-white/90 mb-2" style="font-size:0.88rem;font-weight:600">{{ $myTestimonial->nama }}</p>
-                                    <p class="text-sky-100/90" style="font-size:0.84rem;line-height:1.7">{{ $myTestimonial->pesan }}</p>
-                                    <p class="text-sky-200 mt-3" style="font-size:0.75rem">
-                                        @if($canEditMyTestimonial)
-                                            Anda masih bisa mengedit atau menghapus testimoni ini sampai {{ $myTestimonial->editable_until->format('H:i') }} WIB.
-                                        @else
-                                            Waktu edit dan hapus sudah berakhir. Testimoni menunggu proses validasi admin.
-                                        @endif
-                                    </p>
-                                    @if($myTestimonial->catatan_admin)
-                                        <div class="mt-4 bg-white/10 border border-white/10 rounded-xl p-4">
-                                            <p class="text-white" style="font-size:0.78rem;font-weight:600">Catatan Admin</p>
-                                            <p class="text-sky-100 mt-1" style="font-size:0.8rem;line-height:1.6">{{ $myTestimonial->catatan_admin }}</p>
-                                        </div>
-                                    @endif
+                                <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center" style="font-size:1.1rem;font-weight:700">
+                                    {{ strtoupper(substr($testimonial->nama, 0, 1)) }}
                                 </div>
-
-                                @if($canEditMyTestimonial)
-                                    <div class="flex flex-col gap-2 w-full md:w-40">
-                                        <a href="#form-testimoni" class="bg-white text-sky-800 text-center px-4 py-2.5 rounded-xl" style="font-size:0.82rem;font-weight:700">
-                                            Edit Sekarang
-                                        </a>
-                                        <form method="POST" action="{{ route('testimoni.destroy', $myTestimonial) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="w-full bg-rose-500/20 hover:bg-rose-500/30 text-white px-4 py-2.5 rounded-xl border border-rose-300/30" style="font-size:0.82rem;font-weight:700">
-                                                Hapus Pesan
-                                            </button>
-                                        </form>
-                                    </div>
-                                @endif
                             </div>
+                            @if($testimonial->rating)
+                                <div class="flex items-center gap-1 mb-2 text-amber-400">
+                                    @for($i=1; $i<=5; $i++)
+                                        <svg class="w-4 h-4 {{ $i <= $testimonial->rating ? 'text-amber-400' : 'text-slate-200' }}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    @endfor
+                                </div>
+                            @endif
+                            <p class="text-slate-600" style="font-size:0.88rem;line-height:1.75">{{ $testimonial->pesan }}</p>
+                        </article>
+                    @empty
+                        <div class="md:col-span-2 bg-white rounded-2xl border border-dashed border-sky-200 p-8 text-center">
+                            <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada testimoni yang tayang</p>
+                            <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Testimoni dari pengguna akan ditampilkan di sini setelah dikirimkan dan disetujui admin.</p>
                         </div>
-                    @endif
-                </div>
-
-                <div id="form-testimoni" class="bg-white rounded-3xl border border-sky-100 shadow-xl p-6 md:p-7">
-                    <div class="mb-5">
-                        <h3 class="text-sky-900 mb-2" style="font-size:1.2rem;font-weight:700">Tinggalkan Testimoni</h3>
-                        <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Isi kesan, kritik, atau saran Anda. Nama dan pesan wajib diisi, email boleh dikosongkan.</p>
-                    </div>
-
-                    <form method="POST" action="{{ $myTestimonial && now()->lte($myTestimonial->editable_until) ? route('testimoni.update', $myTestimonial) : route('testimoni.store') }}" class="space-y-4">
-                        @csrf
-                        @if($myTestimonial && now()->lte($myTestimonial->editable_until))
-                            @method('PUT')
-                        @endif
-
-                        <div>
-                            <label for="nama" class="block text-slate-700 mb-1.5" style="font-size:0.82rem;font-weight:600">Nama</label>
-                            <input id="nama" type="text" name="nama" value="{{ old('nama', $myTestimonial->nama ?? '') }}" class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none" placeholder="Contoh: Budi Santoso">
-                            @error('nama')<p class="text-rose-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div>
-                            <label for="email" class="block text-slate-700 mb-1.5" style="font-size:0.82rem;font-weight:600">Email (Opsional)</label>
-                            <input id="email" type="email" name="email" value="{{ old('email', $myTestimonial->email ?? '') }}" class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none" placeholder="nama@email.com">
-                            @error('email')<p class="text-rose-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div>
-                            <label for="pesan" class="block text-slate-700 mb-1.5" style="font-size:0.82rem;font-weight:600">Pesan Testimoni</label>
-                            <textarea id="pesan" name="pesan" rows="6" class="w-full rounded-xl border border-slate-200 px-4 py-3 focus:border-sky-500 focus:outline-none" placeholder="Bagikan pengalaman, saran, atau kesan Anda terhadap layanan TirtaBantu...">{{ old('pesan', $myTestimonial->pesan ?? '') }}</textarea>
-                            @error('pesan')<p class="text-rose-600 mt-1" style="font-size:0.75rem">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div class="bg-sky-50 rounded-2xl p-4 border border-sky-100">
-                            <p class="text-sky-800" style="font-size:0.78rem;font-weight:600">Catatan proses</p>
-                            <p class="text-slate-500 mt-1" style="font-size:0.78rem;line-height:1.7">
-                                Pesan Anda tidak langsung tayang. Admin akan memvalidasi terlebih dahulu. Setelah dikirim, Anda punya waktu 5 menit untuk mengedit atau menghapus pesan dari browser yang sama.
-                            </p>
-                        </div>
-
-                        <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white rounded-xl px-5 py-3 transition-colors shadow-md" style="font-size:0.9rem;font-weight:700">
-                            {{ $myTestimonial && now()->lte($myTestimonial->editable_until) ? 'Perbarui Testimoni Saya' : 'Kirim Testimoni' }}
-                        </button>
-                    </form>
+                    @endforelse
                 </div>
             </div>
         </div>

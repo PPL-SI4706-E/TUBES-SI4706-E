@@ -38,7 +38,7 @@
     @endif
 
     {{-- Laporan List --}}
-    <div class="space-y-4" x-data="{ expandedId: null }">
+    <div class="space-y-4" x-data="{ expandedId: null, ulasanModalOpen: false, selectedLaporanId: null }">
         @foreach($laporans as $l)
             @php
                 $kategori = $l->kategoriLaporan;
@@ -195,9 +195,90 @@
                             <img src="{{ asset('storage/' . $l->foto) }}" alt="Foto laporan" class="rounded-xl border border-sky-100 max-h-60 object-cover">
                         </div>
                     @endif
+
+                    {{-- Feedback / Ulasan --}}
+                    @if($l->status === 'selesai')
+                        @php
+                            $ulasan = \App\Models\Ulasan::where('laporan_id', $l->id)->first();
+                        @endphp
+                        <div class="mt-5 border-t border-sky-100 pt-4">
+                            @if($ulasan)
+                                <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <div class="flex text-amber-400">
+                                            @for($i=1; $i<=5; $i++)
+                                                <svg class="w-4 h-4 {{ $i <= $ulasan->rating ? 'text-amber-400' : 'text-slate-300' }}" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            @endfor
+                                        </div>
+                                        <span class="text-emerald-700" style="font-size:0.83rem;font-weight:600">Feedback Tersimpan</span>
+                                    </div>
+                                    @if($ulasan->komentar)
+                                        <p class="text-slate-700 italic" style="font-size:0.85rem">"{{ $ulasan->komentar }}"</p>
+                                    @endif
+                                </div>
+                            @else
+                                <button type="button" @click="selectedLaporanId = {{ $l->id }}; ulasanModalOpen = true" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                                    Beri Ulasan Pelayanan
+                                </button>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         @endforeach
+
+        {{-- Ulasan Modal --}}
+        <div x-show="ulasanModalOpen" style="display: none" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div x-show="ulasanModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-900 bg-opacity-75 transition-opacity" aria-hidden="true" @click="ulasanModalOpen = false"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div x-show="ulasanModalOpen" x-transition.scale class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                    <form :action="`/warga/laporan/${selectedLaporanId}/ulasan`" method="POST" x-data="{ rating: 5, hoverRating: 0 }">
+                        @csrf
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg leading-6 font-medium text-slate-900" id="modal-title">Beri Ulasan Pelayanan</h3>
+                            <p class="text-sm text-slate-500 mt-2">Bagaimana pengalaman Anda dengan layanan perbaikan kami?</p>
+                            
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Rating</label>
+                                <div class="flex items-center gap-1">
+                                    <template x-for="i in 5">
+                                        <button type="button" 
+                                                @mouseenter="hoverRating = i" 
+                                                @mouseleave="hoverRating = 0" 
+                                                @click="rating = i" 
+                                                class="focus:outline-none">
+                                            <svg class="w-8 h-8 transition-colors" 
+                                                 :class="i <= (hoverRating || rating) ? 'text-amber-400' : 'text-slate-300'" 
+                                                 fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+                                </div>
+                                <input type="hidden" name="rating" x-model="rating">
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Komentar (Opsional)</label>
+                                <textarea name="komentar" rows="3" class="w-full rounded-xl border border-slate-300 px-4 py-2 focus:border-sky-500 focus:outline-none text-sm" placeholder="Ceritakan pengalaman Anda..."></textarea>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-2xl">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-sky-600 text-base font-medium text-white hover:bg-sky-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                                Kirim Ulasan
+                            </button>
+                            <button type="button" @click="ulasanModalOpen = false" class="mt-3 w-full inline-flex justify-center rounded-xl border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

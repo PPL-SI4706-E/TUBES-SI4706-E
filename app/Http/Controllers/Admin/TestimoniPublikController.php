@@ -12,18 +12,8 @@ class TestimoniPublikController extends Controller
 {
     public function index(): View
     {
-        $pendingTestimonials = TestimoniPublik::query()
-            ->where('status', 'pending')
-            ->latest()
-            ->get();
-
-        $reviewedTestimonials = TestimoniPublik::query()
-            ->whereIn('status', ['approved', 'rejected'])
-            ->latest()
-            ->limit(20)
-            ->get();
-
-        return view('admin.testimoni.index', compact('pendingTestimonials', 'reviewedTestimonials'));
+        $testimonials = TestimoniPublik::query()->latest()->get();
+        return view('admin.testimoni.index', compact('testimonials'));
     }
 
     public function approve(TestimoniPublik $testimoni): RedirectResponse
