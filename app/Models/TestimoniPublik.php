@@ -14,6 +14,7 @@ class TestimoniPublik extends Model
     protected $fillable = [
         'nama',
         'email',
+        'rating',
         'pesan',
         'status',
         'catatan_admin',
