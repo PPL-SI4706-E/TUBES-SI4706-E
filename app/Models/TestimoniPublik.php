@@ -16,24 +16,33 @@ class TestimoniPublik extends Model
         'nama',
         'email',
         'pesan',
-        'status_validasi',
-        'edit_token',
-        'editable_until',
+        'status',
         'validated_at',
     ];
 
     protected $casts = [
-        'editable_until' => 'datetime',
         'validated_at' => 'datetime',
     ];
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+
     public function scopeApproved($query)
     {
-        return $query->where('status_validasi', 'disetujui');
+        return $query->where('status', self::STATUS_APPROVED);
     }
 
-    public function isEditable(): bool
+    public function scopePending($query)
     {
-        return $this->editable_until instanceof Carbon && $this->editable_until->isFuture();
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function isEditableUntil(?Carbon $now = null): bool
+    {
+        $now ??= now();
+
+        return $this->created_at !== null
+            && $now->lessThanOrEqualTo($this->created_at->copy()->addMinutes(5));
     }
 }

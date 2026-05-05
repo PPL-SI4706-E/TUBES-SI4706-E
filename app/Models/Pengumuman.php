@@ -9,10 +9,6 @@ class Pengumuman extends Model
 {
     use HasFactory;
 
-<<<<<<< Updated upstream
-    protected $table = 'pengumumans';
-}
-=======
     protected $table = 'pengumuman';
 
     protected $fillable = [
@@ -20,8 +16,8 @@ class Pengumuman extends Model
         'judul',
         'isi',
         'kategori',
-        'is_penting',
         'tanggal_post',
+        'is_penting',
     ];
 
     protected $casts = [
@@ -34,4 +30,3 @@ class Pengumuman extends Model
         return $this->belongsTo(User::class);
     }
 }
->>>>>>> Stashed changes

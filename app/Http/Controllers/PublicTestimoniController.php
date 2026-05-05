@@ -5,31 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\TestimoniPublik;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class PublicTestimoniController extends Controller
 {
+    private const SESSION_KEY = 'public_testimoni_id';
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'nama' => ['required', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:100'],
-            'pesan' => ['required', 'string', 'min:10', 'max:600'],
+            'nama' => 'required|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'pesan' => 'required|string|min:10|max:1000',
+        ], [
+            'nama.required' => 'Nama wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'pesan.required' => 'Pesan testimoni wajib diisi.',
+            'pesan.min' => 'Pesan testimoni minimal 10 karakter.',
         ]);
-
-        $plainToken = Str::random(40);
 
         $testimoni = TestimoniPublik::create([
-            'nama' => $data['nama'],
-            'email' => $data['email'] ?? null,
-            'pesan' => $data['pesan'],
-            'status_validasi' => 'pending',
-            'edit_token' => Hash::make($plainToken),
-            'editable_until' => now()->addMinutes(5),
+            ...$data,
+            'status' => TestimoniPublik::STATUS_PENDING,
         ]);
 
-        $request->session()->put("testimoni_guest.{$testimoni->id}", $plainToken);
+        $request->session()->put(self::SESSION_KEY, $testimoni->id);
 
         return redirect()
             ->to(route('home') . '#testimoni')
@@ -40,26 +39,24 @@ class PublicTestimoniController extends Controller
     {
         if (! $this->canManage($request, $testimoni)) {
             return redirect()
-                ->route('home')
-                ->withErrors(['testimoni' => 'Masa edit testimoni sudah berakhir atau sesi Anda tidak valid.']);
+                ->to(route('home') . '#testimoni')
+                ->withErrors(['testimoni' => 'Batas waktu edit testimoni sudah berakhir atau sesi Anda tidak cocok.']);
         }
 
         $data = $request->validate([
-            'nama' => ['required', 'string', 'max:100'],
-            'email' => ['nullable', 'email', 'max:100'],
-            'pesan' => ['required', 'string', 'min:10', 'max:600'],
+            'nama' => 'required|string|max:100',
+            'email' => 'nullable|email|max:255',
+            'pesan' => 'required|string|min:10|max:1000',
         ]);
 
         $testimoni->update([
-            'nama' => $data['nama'],
-            'email' => $data['email'] ?? null,
-            'pesan' => $data['pesan'],
-            'status_validasi' => 'pending',
+            ...$data,
+            'status' => TestimoniPublik::STATUS_PENDING,
             'validated_at' => null,
         ]);
 
         return redirect()
-            ->to(route('home') . '#kelola-testimoni')
+            ->to(route('home') . '#testimoni')
             ->with('success', 'Testimoni berhasil diperbarui dan dikirim ulang untuk validasi admin.');
     }
 
@@ -67,24 +64,26 @@ class PublicTestimoniController extends Controller
     {
         if (! $this->canManage($request, $testimoni)) {
             return redirect()
-                ->route('home')
-                ->withErrors(['testimoni' => 'Masa hapus testimoni sudah berakhir atau sesi Anda tidak valid.']);
+                ->to(route('home') . '#testimoni')
+                ->withErrors(['testimoni' => 'Batas waktu hapus testimoni sudah berakhir atau sesi Anda tidak cocok.']);
         }
 
-        $request->session()->forget("testimoni_guest.{$testimoni->id}");
         $testimoni->delete();
+        $request->session()->forget(self::SESSION_KEY);
 
         return redirect()
-            ->to(route('home') . '#kelola-testimoni')
-            ->with('success', 'Testimoni berhasil dihapus.');
+            ->to(route('home') . '#testimoni')
+            ->with('success', 'Testimoni berhasil ditarik kembali.');
     }
 
-    protected function canManage(Request $request, TestimoniPublik $testimoni): bool
+    public static function sessionKey(): string
     {
-        $sessionToken = $request->session()->get("testimoni_guest.{$testimoni->id}");
+        return self::SESSION_KEY;
+    }
 
-        return $testimoni->isEditable()
-            && is_string($sessionToken)
-            && Hash::check($sessionToken, $testimoni->edit_token ?? '');
+    private function canManage(Request $request, TestimoniPublik $testimoni): bool
+    {
+        return (int) $request->session()->get(self::SESSION_KEY) === (int) $testimoni->id
+            && $testimoni->isEditableUntil();
     }
 }

@@ -67,6 +67,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // TODO: FR-06 — Kelola Laporan (Sprint 1)
     Route::prefix('laporan')->name('laporan.')->controller(AdminLaporanController::class)->group(function () {
         Route::get('/',                        'index')->name('index');
+        Route::get('/peta',                    'peta')->name('peta');
         Route::get('/{laporan}',               'show')->name('show');
         Route::post('/{laporan}/validasi',     'validasi')->name('validasi');
         Route::post('/{laporan}/assign',       'assign')->name('assign');
@@ -98,7 +99,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::prefix('testimoni')->name('testimoni.')->controller(AdminTestimoniPublikController::class)->group(function () {
         Route::get('/', 'index')->name('index');
-        Route::patch('/{testimoni}/status', 'updateStatus')->name('update-status');
+        Route::patch('/{testimoni}/approve', 'approve')->name('approve');
+        Route::patch('/{testimoni}/reject', 'reject')->name('reject');
+        Route::patch('/{testimoni}/pending', 'pending')->name('pending');
         Route::delete('/{testimoni}', 'destroy')->name('destroy');
     });
 });

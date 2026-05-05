@@ -5,40 +5,58 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\TestimoniPublik;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class TestimoniPublikController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $testimoni = TestimoniPublik::latest()->paginate(12);
+        $testimoni = TestimoniPublik::query()
+            ->latest()
+            ->paginate(12);
 
-        return view('admin.testimoni.index', compact('testimoni'));
+        $summary = [
+            'pending' => TestimoniPublik::pending()->count(),
+            'approved' => TestimoniPublik::where('status', TestimoniPublik::STATUS_APPROVED)->count(),
+            'rejected' => TestimoniPublik::where('status', TestimoniPublik::STATUS_REJECTED)->count(),
+        ];
+
+        return view('admin.testimoni.index', compact('testimoni', 'summary'));
     }
 
-    public function updateStatus(Request $request, TestimoniPublik $testimoni): RedirectResponse
+    public function approve(TestimoniPublik $testimoni): RedirectResponse
     {
-        $data = $request->validate([
-            'status_validasi' => ['required', 'in:pending,disetujui,ditolak'],
-        ]);
-
         $testimoni->update([
-            'status_validasi' => $data['status_validasi'],
-            'validated_at' => $data['status_validasi'] === 'pending' ? null : now(),
+            'status' => TestimoniPublik::STATUS_APPROVED,
+            'validated_at' => now(),
         ]);
 
-        return redirect()
-            ->route('admin.testimoni.index')
-            ->with('success', 'Status testimoni berhasil diperbarui.');
+        return back()->with('success', 'Testimoni berhasil disetujui dan ditampilkan di landing page.');
+    }
+
+    public function reject(TestimoniPublik $testimoni): RedirectResponse
+    {
+        $testimoni->update([
+            'status' => TestimoniPublik::STATUS_REJECTED,
+            'validated_at' => now(),
+        ]);
+
+        return back()->with('success', 'Testimoni ditolak dan disembunyikan dari landing page.');
+    }
+
+    public function pending(TestimoniPublik $testimoni): RedirectResponse
+    {
+        $testimoni->update([
+            'status' => TestimoniPublik::STATUS_PENDING,
+            'validated_at' => null,
+        ]);
+
+        return back()->with('success', 'Testimoni dikembalikan ke status pending untuk ditinjau ulang.');
     }
 
     public function destroy(TestimoniPublik $testimoni): RedirectResponse
     {
         $testimoni->delete();
 
-        return redirect()
-            ->route('admin.testimoni.index')
-            ->with('success', 'Testimoni berhasil dihapus dari sistem.');
+        return back()->with('success', 'Testimoni berhasil dihapus permanen.');
     }
 }
