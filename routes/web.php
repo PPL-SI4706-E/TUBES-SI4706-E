@@ -13,7 +13,6 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Masyarakat\LaporanController as WargaLaporanController;
 use App\Http\Controllers\Masyarakat\PembayaranController as WargaPembayaranController;
 use App\Http\Controllers\Masyarakat\UlasanController;
-use App\Http\Controllers\Petugas\SidebarController;
 use App\Http\Controllers\Petugas\TugasController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
@@ -130,18 +129,10 @@ Route::prefix('warga')->name('warga.')->middleware(['auth', 'masyarakat'])->grou
 Route::prefix('petugas')->name('petugas.')->middleware(['auth', 'petugas'])->group(function () {
 
     // TODO: FR-09 & FR-10 — Daftar Tugas (Sprint 2)
-    Route::get('/avatar/{user}', [SidebarController::class, 'avatar'])->name('avatar');
-    Route::get('/daftar-tugas', [TugasController::class, 'index'])->name('daftar-tugas');
-    Route::get('/profil', [SidebarController::class, 'profile'])->name('profile');
-    Route::post('/profil', [SidebarController::class, 'updateProfile'])->name('profile.update');
-    Route::post('/profil/password', [SidebarController::class, 'updatePassword'])->name('profile.password');
-    Route::get('/notifikasi', [SidebarController::class, 'notifications'])->name('notifications');
     Route::prefix('tugas')->name('tugas.')->controller(TugasController::class)->group(function () {
         Route::get('/',                          'index')->name('index');
         Route::get('/{penugasan}',               'show')->name('show');
         Route::post('/{penugasan}/status',       'updateStatus')->name('status');
         Route::post('/{penugasan}/bukti',        'uploadBukti')->name('bukti');
-        Route::post('/{penugasan}/update-status','updateStatus')->name('update-status');
-        Route::post('/{penugasan}/upload-bukti', 'uploadBukti')->name('upload-bukti');
     });
 });
