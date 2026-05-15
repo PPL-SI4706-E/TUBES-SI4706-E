@@ -3,37 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FilterLaporanRequest;
+use App\Models\KategoriLaporan;
 use App\Models\Laporan;
+use App\Models\Wilayah;
 use Illuminate\Http\Request;
 
 class LaporanController extends Controller
 {
-    public function index(Request $request)
+    public function index(FilterLaporanRequest $request)
     {
-        $query = Laporan::with(['kategoriLaporan', 'wilayah', 'user'])->latest();
+        $filters = $request->validated();
 
-        // Filter berdasarkan status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        $laporans = Laporan::query()
+            ->filterKeyword($filters['keyword'] ?? null)
+            ->filterStatusBayar($filters['status_bayar'] ?? null)
+            ->filterRentangBulan($filters['bulan_awal'] ?? null, $filters['bulan_akhir'] ?? null)
+            ->filterWilayah($filters['wilayah_id'] ?? null)
+            ->filterKategori($filters['kategori_id'] ?? null)
+            ->with(['kategoriLaporan', 'wilayah', 'user', 'pembayaran'])
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        // Pencarian berdasarkan ID, alamat, atau deskripsi
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                // Cari berdasarkan ID (jika input numerik)
-                if (is_numeric($search)) {
-                    $q->where('id', $search);
-                }
-                // Cari berdasarkan alamat
-                $q->orWhere('alamat', 'like', "%{$search}%")
-                  // Cari berdasarkan deskripsi
-                  ->orWhere('deskripsi', 'like', "%{$search}%");
-            });
-        }
+        $wilayahs = Wilayah::query()
+            ->orderBy('nama_wilayah')
+            ->get();
 
-        $laporans = $query->paginate(15)->withQueryString();
-        return view('admin.laporan.index', compact('laporans'));
+        $kategoris = KategoriLaporan::query()
+            ->orderBy('nama_kategori')
+            ->get();
+
+        return view('admin.laporan.index', compact('laporans', 'wilayahs', 'kategoris'));
     }
 
     public function peta()
