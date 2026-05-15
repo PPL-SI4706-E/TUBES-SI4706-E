@@ -86,7 +86,7 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute(): string
     {
         return $this->avatar
-            ? asset('storage/' . $this->avatar)
+            ? route('petugas.avatar', $this->id)
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=0ea5e9&color=fff';
     }
 
