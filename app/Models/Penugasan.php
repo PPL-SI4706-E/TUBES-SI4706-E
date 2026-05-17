@@ -37,10 +37,16 @@ class Penugasan extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
+  
     /** Ulasan/rating yang diberikan oleh warga setelah tugas selesai. */
     public function ulasan()
     {
         return $this->hasOne(Ulasan::class, 'penugasan_id');
+    }
+
+    /** Bukti penyelesaian yang diupload petugas. */
+    public function penyelesaian()
+    {
+        return $this->hasOne(PenyelesaianTugas::class, 'penugasan_id');
     }
 }
