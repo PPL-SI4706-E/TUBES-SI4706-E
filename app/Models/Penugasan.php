@@ -33,6 +33,11 @@ class Penugasan extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function penyelesaian()
+    {
+        return $this->hasOne(PenyelesaianTugas::class, 'penugasan_id');
+    }
+
     public function penyelesaianTugas()
     {
         return $this->hasOne(PenyelesaianTugas::class, 'penugasan_id');

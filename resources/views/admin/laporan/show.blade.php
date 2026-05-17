@@ -185,7 +185,7 @@
         {{-- ── FORM VALIDASI (hanya saat status pending) ── --}}
         @if($laporan->status === 'pending')
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
-             x-data="{ action: '{{ old('status', '') }}' }">
+             x-data="{ action: '{{ old('aksi', '') }}' }">
 
             {{-- Header --}}
             <div class="p-4 bg-amber-50 border-b border-amber-100 flex items-start gap-3">
@@ -208,18 +208,18 @@
 
                     {{-- Opsi 1: Terima → Penanganan Lapangan --}}
                     <label class="cursor-pointer block relative">
-                        <input type="radio" name="status" value="diterima" class="peer sr-only" x-model="action">
+                        <input type="radio" name="aksi" value="terima_lapangan" class="peer sr-only" x-model="action">
                         <div class="flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200
                                     peer-checked:border-blue-500 peer-checked:bg-blue-50
                                     hover:bg-slate-50 transition-all">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0
                                         peer-checked:bg-blue-500"
-                                 :class="action === 'diterima' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'">
+                                 :class="action === 'terima_lapangan' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-400'">
                                 <i data-lucide="check-circle-2" class="w-4 h-4"></i>
                             </div>
                             <div class="min-w-0">
                                 <p class="font-semibold text-sm"
-                                   :class="action === 'diterima' ? 'text-blue-800' : 'text-slate-700'">
+                                   :class="action === 'terima_lapangan' ? 'text-blue-800' : 'text-slate-700'">
                                     Terima — Penanganan Lapangan
                                 </p>
                                 <p class="text-xs text-slate-400">Petugas akan diturunkan ke lokasi.</p>
@@ -229,17 +229,17 @@
 
                     {{-- Opsi 2: Solusi Virtual --}}
                     <label class="cursor-pointer block relative">
-                        <input type="radio" name="status" value="selesai" class="peer sr-only" x-model="action">
+                        <input type="radio" name="aksi" value="solusi_virtual" class="peer sr-only" x-model="action">
                         <div class="flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200
                                     peer-checked:border-emerald-500 peer-checked:bg-emerald-50
                                     hover:bg-slate-50 transition-all">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                                 :class="action === 'selesai' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'">
+                                 :class="action === 'solusi_virtual' ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'">
                                 <i data-lucide="monitor-check" class="w-4 h-4"></i>
                             </div>
                             <div class="min-w-0">
                                 <p class="font-semibold text-sm"
-                                   :class="action === 'selesai' ? 'text-emerald-800' : 'text-slate-700'">
+                                   :class="action === 'solusi_virtual' ? 'text-emerald-800' : 'text-slate-700'">
                                     Solusi Virtual
                                 </p>
                                 <p class="text-xs text-slate-400">Diselesaikan tanpa menurunkan petugas lapangan.</p>
@@ -249,17 +249,17 @@
 
                     {{-- Opsi 3: Tolak --}}
                     <label class="cursor-pointer block relative">
-                        <input type="radio" name="status" value="ditolak" class="peer sr-only" x-model="action">
+                        <input type="radio" name="aksi" value="tolak" class="peer sr-only" x-model="action">
                         <div class="flex items-center gap-3 p-3 rounded-lg border-2 border-slate-200
                                     peer-checked:border-red-500 peer-checked:bg-red-50
                                     hover:bg-slate-50 transition-all">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                                 :class="action === 'ditolak' ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400'">
+                                 :class="action === 'tolak' ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400'">
                                 <i data-lucide="x-circle" class="w-4 h-4"></i>
                             </div>
                             <div class="min-w-0">
                                 <p class="font-semibold text-sm"
-                                   :class="action === 'ditolak' ? 'text-red-800' : 'text-slate-700'">
+                                   :class="action === 'tolak' ? 'text-red-800' : 'text-slate-700'">
                                     Tolak Laporan
                                 </p>
                                 <p class="text-xs text-slate-400">Laporan tidak dapat ditindaklanjuti.</p>
@@ -268,7 +268,7 @@
                     </label>
                 </div>
 
-                @error('status')
+                @error('aksi')
                     <p class="text-red-500 text-xs mb-3 font-medium -mt-1">{{ $message }}</p>
                 @enderror
 
@@ -276,27 +276,27 @@
                 <div class="mb-4" x-show="action !== ''">
                     <label class="block text-xs font-semibold mb-1.5"
                            :class="{
-                               'text-blue-700'   : action === 'diterima',
-                               'text-emerald-700': action === 'selesai',
-                               'text-red-700'    : action === 'ditolak',
+                               'text-blue-700'   : action === 'terima_lapangan',
+                               'text-emerald-700': action === 'solusi_virtual',
+                               'text-red-700'    : action === 'tolak',
                                'text-slate-700'  : action === ''
                            }">
-                        <span x-show="action === 'diterima'">Catatan Penanganan <span class="text-red-500">*</span></span>
-                        <span x-show="action === 'selesai'">Solusi / Penjelasan Virtual <span class="text-red-500">*</span></span>
-                        <span x-show="action === 'ditolak'">Alasan Penolakan <span class="text-red-500">*</span></span>
+                        <span x-show="action === 'terima_lapangan'">Catatan untuk Petugas</span>
+                        <span x-show="action === 'solusi_virtual'">Catatan Solusi Virtual <span class="text-red-500">*</span></span>
+                        <span x-show="action === 'tolak'">Alasan Penolakan <span class="text-red-500">*</span></span>
                     </label>
                     <textarea name="catatan_admin" rows="3"
-                              :placeholder="action === 'diterima' ? 'Tambahkan catatan untuk petugas…'
-                                          : action === 'selesai' ? 'Jelaskan solusi yang diberikan secara virtual…'
+                              :placeholder="action === 'terima_lapangan' ? 'Tambahkan catatan untuk petugas…'
+                                          : action === 'solusi_virtual' ? 'Jelaskan solusi yang diberikan secara virtual…'
                                           : 'Jelaskan alasan penolakan laporan ini…'"
                               class="w-full rounded-lg border-slate-300 shadow-sm text-sm p-3 focus:outline-none transition
                                      focus:ring-2"
                               :class="{
-                                  'focus:border-blue-400 focus:ring-blue-100'   : action === 'diterima',
-                                  'focus:border-emerald-400 focus:ring-emerald-100': action === 'selesai',
-                                  'focus:border-red-400 focus:ring-red-100'     : action === 'ditolak'
+                                  'focus:border-blue-400 focus:ring-blue-100'   : action === 'terima_lapangan',
+                                  'focus:border-emerald-400 focus:ring-emerald-100': action === 'solusi_virtual',
+                                  'focus:border-red-400 focus:ring-red-100'     : action === 'tolak'
                               }"
-                              required>{{ old('catatan_admin') }}</textarea>
+                              >{{ old('catatan_admin') }}</textarea>
                     @error('catatan_admin')
                         <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
                     @enderror
@@ -306,16 +306,16 @@
                         class="w-full text-white font-medium py-2.5 rounded-lg transition-all flex items-center justify-center gap-2
                                disabled:opacity-40 disabled:cursor-not-allowed"
                         :class="{
-                            'bg-blue-600 hover:bg-blue-700'     : action === 'diterima',
-                            'bg-emerald-600 hover:bg-emerald-700': action === 'selesai',
-                            'bg-red-600 hover:bg-red-700'       : action === 'ditolak',
+                            'bg-blue-600 hover:bg-blue-700'     : action === 'terima_lapangan',
+                            'bg-emerald-600 hover:bg-emerald-700': action === 'solusi_virtual',
+                            'bg-red-600 hover:bg-red-700'       : action === 'tolak',
                             'bg-slate-300'                      : action === ''
                         }"
                         :disabled="!action">
                     <i data-lucide="save" class="w-4 h-4"></i>
-                    <span x-show="action === 'diterima'">Terima &amp; Tugaskan Petugas</span>
-                    <span x-show="action === 'selesai'">Tandai Selesai (Solusi Virtual)</span>
-                    <span x-show="action === 'ditolak'">Tolak Laporan</span>
+                    <span x-show="action === 'terima_lapangan'">Terima &amp; Tugaskan Petugas</span>
+                    <span x-show="action === 'solusi_virtual'">Selesaikan dengan Solusi Virtual</span>
+                    <span x-show="action === 'tolak'">Tolak Laporan</span>
                     <span x-show="action === ''"       class="text-slate-500">Pilih Aksi Terlebih Dahulu</span>
                 </button>
             </form>
@@ -333,7 +333,9 @@
                     <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
                     <div>
                         <p class="font-bold text-sm">Laporan Diterima</p>
-                        <p class="text-xs text-blue-600/80 mt-1">Menunggu penugasan petugas lapangan.</p>
+                        <p class="text-xs text-blue-600/80 mt-1">
+                            {{ $laporan->penugasan?->petugas?->name ? 'Petugas ' . $laporan->penugasan->petugas->name . ' sudah ditugaskan ke lokasi.' : 'Petugas lapangan sudah ditugaskan ke lokasi.' }}
+                        </p>
                         @if($laporan->catatan_admin)
                             <div class="mt-2 bg-white/70 p-2.5 rounded-lg border border-blue-100 text-xs text-blue-800">
                                 <span class="font-semibold">Catatan:</span> {{ $laporan->catatan_admin }}
@@ -375,14 +377,12 @@
                 </div>
             @endif
 
-            @if($laporan->status === 'diterima')
+            @if($laporan->status === 'diterima' && $laporan->penugasan)
             <div class="mt-4 pt-4 border-t border-slate-100">
-                <a href="#"
-                   class="w-full flex items-center justify-center gap-2 bg-sky-100 text-sky-400 font-medium py-2 rounded-lg text-sm cursor-not-allowed select-none"
-                   title="Fitur penugasan (PBI berikutnya)">
-                    <i data-lucide="user-plus" class="w-4 h-4"></i> Tugaskan Petugas
-                </a>
-                <p class="text-[10px] text-slate-400 text-center mt-1.5">Tersedia pada PBI berikutnya.</p>
+                <div class="rounded-lg border border-blue-100 bg-blue-50 px-3 py-3 text-xs text-blue-800">
+                    <p class="font-semibold">Petugas Bertugas: {{ $laporan->penugasan->petugas?->name ?? 'Petugas Lapangan' }}</p>
+                    <p class="mt-1">Status tugas awal: {{ $laporan->penugasan->status_tugas }}</p>
+                </div>
             </div>
             @endif
         </div>

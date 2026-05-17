@@ -38,4 +38,28 @@ class UserFactory extends Factory
             'remember_token' => null,
         ]);
     }
+
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+    }
+
+    public function petugas(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'petugas',
+            'is_active' => true,
+        ]);
+    }
+
+    public function masyarakat(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'masyarakat',
+            'is_active' => true,
+        ]);
+    }
 }
