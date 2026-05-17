@@ -38,13 +38,9 @@ class User extends Authenticatable
 
     public function penugasanSebagaiPetugas()
     {
-        return $this->hasMany(Penugasan::class, 'petugas_id');
+        return $this->hasMany(Penugasan::class, 'user_id');
     }
 
-    public function penugasanSebagaiAdmin()
-    {
-        return $this->hasMany(Penugasan::class, 'admin_id');
-    }
 
     public function ulasans()
     {

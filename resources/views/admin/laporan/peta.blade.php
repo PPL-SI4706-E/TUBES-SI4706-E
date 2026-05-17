@@ -106,6 +106,9 @@
 </div>
 
 <script>
+window.adminMapInstance = null;
+window.adminMarkersLayer = [];
+
 function petaLaporan() {
     let leafletMap = null;
     let leafletMarkers = [];
@@ -163,23 +166,39 @@ function petaLaporan() {
         },
 
         initMap() {
-            leafletMap = L.map('map').setView([-6.9175, 107.6191], 9);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                maxZoom: 19
-            }).addTo(leafletMap);
+            setTimeout(() => {
+                if (leafletMap) {
+                    leafletMap.off();
+                    leafletMap.remove();
+                }
+                
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                    mapContainer._leaflet_id = null;
+                }
+                
+                leafletMap = L.map('map').setView([-6.9175, 107.6191], 9);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    maxZoom: 19
+                }).addTo(leafletMap);
 
-            this.renderMarkers();
-
-            if (leafletMarkers.length > 0) {
-                const group = new L.featureGroup(leafletMarkers);
-                leafletMap.fitBounds(group.getBounds(), { padding: [60, 60], maxZoom: 14 });
-            }
-
-            setTimeout(() => leafletMap.invalidateSize(), 500);
+                this.renderMarkers();
+                
+                if (leafletMarkers.length > 0) {
+                    const group = new L.featureGroup(leafletMarkers);
+                    leafletMap.fitBounds(group.getBounds(), { padding: [60, 60], maxZoom: 14 });
+                }
+                
+                setTimeout(() => {
+                    if (leafletMap) leafletMap.invalidateSize();
+                }, 100);
+            }, 100);
         },
 
         renderMarkers() {
+            if (!leafletMap) return;
+            
             // Hapus marker lama
             leafletMarkers.forEach(m => leafletMap.removeLayer(m));
             leafletMarkers = [];
@@ -188,8 +207,12 @@ function petaLaporan() {
                 const lokasi = report.map_lokasi || report.mapLokasi;
                 if (!lokasi) return;
 
-                const lat   = parseFloat(lokasi.latitude);
-                const lng   = parseFloat(lokasi.longitude);
+                const lat = parseFloat(lokasi.latitude);
+                const lng = parseFloat(lokasi.longitude);
+                
+                // Prevent Leaflet crash if coordinates are invalid
+                if (isNaN(lat) || isNaN(lng)) return;
+                
                 const color = this.getStatusColor(report.status);
                 const label = this.getStatusLabel(report.status);
 
@@ -235,11 +258,15 @@ function petaLaporan() {
                         </a>
                     </div>`;
 
-                const marker = L.marker([lat, lng], { icon })
-                    .addTo(leafletMap)
-                    .bindPopup(popup, { maxWidth: 240 });
+                try {
+                    const marker = L.marker([lat, lng], { icon })
+                        .addTo(leafletMap)
+                        .bindPopup(popup, { maxWidth: 240 });
 
-                leafletMarkers.push(marker);
+                    leafletMarkers.push(marker);
+                } catch (e) {
+                    console.error("Error adding marker for report", report.id, e);
+                }
             });
         },
 
@@ -247,10 +274,10 @@ function petaLaporan() {
             this.filteredReports = this.filterStatus === 'semua'
                 ? this.allReports
                 : this.allReports.filter(r => r.status === this.filterStatus);
-
+            
             this.renderMarkers();
-
-            if (leafletMarkers.length > 0) {
+            
+            if (leafletMarkers.length > 0 && leafletMap) {
                 const group = new L.featureGroup(leafletMarkers);
                 leafletMap.fitBounds(group.getBounds(), { padding: [60, 60], maxZoom: 15 });
             }
@@ -258,14 +285,18 @@ function petaLaporan() {
 
         zoomToReport(report) {
             const lokasi = report.map_lokasi || report.mapLokasi;
-            if (!lokasi) return;
+            if (!lokasi || !leafletMap) return;
             const lat = parseFloat(lokasi.latitude);
             const lng = parseFloat(lokasi.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
             leafletMap.setView([lat, lng], 16, { animate: true });
-
+            
             const marker = leafletMarkers.find(m => {
                 const pos = m.getLatLng();
-                return Math.abs(pos.lat - lat) < 0.00001 && Math.abs(pos.lng - lng) < 0.00001;
+                // using small epsilon for float comparison
+                return Math.abs(pos.lat - lat) < 0.0001 && Math.abs(pos.lng - lng) < 0.0001;
             });
             if (marker) marker.openPopup();
         },

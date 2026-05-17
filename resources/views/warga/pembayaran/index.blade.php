@@ -13,6 +13,19 @@
             <p class="text-slate-500">Kelola tagihan biaya perbaikan dan layanan air</p>
         </div>
 
+        @if($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-4 mb-6 shadow-sm flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                <div class="text-sm">
+                    <p class="font-bold mb-1">Terjadi Kesalahan:</p>
+                    <ul class="list-disc list-inside space-y-0.5">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
@@ -245,16 +258,6 @@
                             </div>
                         </div>
 
-                        <div x-show="selectedMetode === 'QRIS / E-Wallet'" x-transition class="text-center">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Scan QRIS
-                                Berikut:</p>
-                            <div class="bg-white p-4 rounded-3xl inline-block border border-slate-200 shadow-sm mb-3">
-                                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=TIRTABANTU-INV-' + selectedTagihan.laporan_id + '-' + selectedTagihan.id"
-                                    class="w-[180px] h-[180px]" alt="QRIS Code">
-                            </div>
-                            <p class="text-[10px] text-slate-400 font-medium italic">Silakan scan menggunakan E-Wallet atau
-                                M-Banking Anda</p>
-                        </div>
 
                         <div x-show="selectedMetode === 'Tunai di Kantor'" x-transition
                             class="py-4 text-center">
@@ -283,7 +286,7 @@
                                 <input type="file" name="bukti_transaksi" id="bukti_transaksi"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     :required="selectedMetode !== 'Tunai di Kantor'"
-                                    @change="const file = $event.target.files[0]; if(file) { if(file.size > 5*1024*1024) { alert('Ukuran file terlalu besar, maksimal 5 MB'); $event.target.value = ''; return; } const reader = new FileReader(); reader.onload = (e) => { $refs.preview.src = e.target.result; $refs.placeholder.classList.add('hidden'); $refs.previewContainer.classList.remove('hidden'); }; reader.readAsDataURL(file); }">
+                                    @change="const file = $event.target.files[0]; if(file) { if(!file.type.startsWith('image/')) { alert('Format file tidak didukung, harap unggah gambar (JPG/PNG).'); $event.target.value = ''; return; } if(file.size > 5*1024*1024) { alert('Ukuran file terlalu besar, maksimal 5 MB'); $event.target.value = ''; return; } const reader = new FileReader(); reader.onload = (e) => { $refs.preview.src = e.target.result; $refs.placeholder.classList.add('hidden'); $refs.previewContainer.classList.remove('hidden'); }; reader.readAsDataURL(file); }">
 
                                 <div
                                     class="border-2 border-dashed border-slate-200 rounded-[2rem] p-6 text-center transition-all duration-300 group-hover:border-sky-400 group-hover:bg-sky-50/30">
@@ -314,16 +317,14 @@
                                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-1">Metode
                                 Pembayaran:</label>
                             <input type="hidden" name="metode_pembayaran" :value="selectedMetode">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <template x-for="metode in ['Transfer Bank', 'QRIS / E-Wallet', 'Tunai di Kantor']">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <template x-for="metode in ['Transfer Bank', 'Tunai di Kantor']">
                                     <button type="button" @click="selectedMetode = metode"
                                         class="p-4 border-[1.5px] rounded-2xl text-left transition-all duration-200 flex items-center gap-4 relative overflow-hidden"
                                         :class="selectedMetode === metode ? 'border-sky-500 bg-sky-50/50 ring-4 ring-sky-500/5' : 'border-slate-100 hover:border-sky-200 hover:bg-slate-50'">
                                         <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                                             :class="selectedMetode === metode ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-400'">
                                             <template x-if="metode === 'Transfer Bank'"><i data-lucide="building-2"
-                                                    class="w-4 h-4"></i></template>
-                                            <template x-if="metode === 'QRIS / E-Wallet'"><i data-lucide="qr-code"
                                                     class="w-4 h-4"></i></template>
                                             <template x-if="metode === 'Tunai di Kantor'"><i data-lucide="building"
                                                     class="w-4 h-4"></i></template>

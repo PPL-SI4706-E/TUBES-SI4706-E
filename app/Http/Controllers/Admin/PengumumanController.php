@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class PengumumanController extends Controller
@@ -15,70 +14,53 @@ class PengumumanController extends Controller
     {
         $pengumuman = Pengumuman::query()
             ->latest('tanggal_post')
-            ->latest('created_at')
-            ->paginate(10);
+            ->latest()
+            ->get();
 
         return view('admin.pengumuman.index', compact('pengumuman'));
     }
 
-    public function create(): View
-    {
-        return view('admin.pengumuman.create');
-    }
-
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validatePengumuman($request);
-        $data['user_id'] = auth()->id();
-        $data['is_published'] = $request->boolean('is_published', true);
+        $data = $request->validate([
+            'judul' => ['required', 'string', 'max:255'],
+            'isi' => ['required', 'string'],
+            'kategori' => ['required', 'in:darurat,gangguan,jadwal,info'],
+            'tanggal_post' => ['required', 'date'],
+            'is_penting' => ['nullable', 'boolean'],
+        ]);
 
-        Pengumuman::create($data);
+        Pengumuman::query()->create([
+            ...$data,
+            'user_id' => $request->user()->id,
+            'is_penting' => $request->boolean('is_penting'),
+        ]);
 
-        return redirect()
-            ->route('admin.pengumuman.index')
-            ->with('success', 'Pengumuman berhasil dibuat.');
-    }
-
-    public function edit(Pengumuman $pengumuman): View
-    {
-        return view('admin.pengumuman.edit', compact('pengumuman'));
+        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil dibuat.');
     }
 
     public function update(Request $request, Pengumuman $pengumuman): RedirectResponse
     {
-        $data = $this->validatePengumuman($request);
-        $data['is_published'] = $request->boolean('is_published');
+        $data = $request->validate([
+            'judul' => ['required', 'string', 'max:255'],
+            'isi' => ['required', 'string'],
+            'kategori' => ['required', 'in:darurat,gangguan,jadwal,info'],
+            'tanggal_post' => ['required', 'date'],
+            'is_penting' => ['nullable', 'boolean'],
+        ]);
 
-        $pengumuman->update($data);
+        $pengumuman->update([
+            ...$data,
+            'is_penting' => $request->boolean('is_penting'),
+        ]);
 
-        return redirect()
-            ->route('admin.pengumuman.index')
-            ->with('success', 'Pengumuman berhasil diperbarui.');
+        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil diperbarui.');
     }
 
     public function destroy(Pengumuman $pengumuman): RedirectResponse
     {
         $pengumuman->delete();
 
-        return redirect()
-            ->route('admin.pengumuman.index')
-            ->with('success', 'Pengumuman berhasil dihapus.');
-    }
-
-    private function validatePengumuman(Request $request): array
-    {
-        return $request->validate([
-            'category' => ['required', Rule::in(['darurat', 'jadwal', 'informasi'])],
-            'priority' => ['required', Rule::in(['penting', 'normal'])],
-            'tanggal_post' => ['required', 'date'],
-            'judul' => ['required', 'string', 'max:255'],
-            'isi' => ['required', 'string'],
-        ], [
-            'category.required' => 'Kategori wajib dipilih.',
-            'priority.required' => 'Prioritas wajib dipilih.',
-            'tanggal_post.required' => 'Tanggal wajib diisi.',
-            'judul.required' => 'Judul wajib diisi.',
-            'isi.required' => 'Isi pengumuman wajib diisi.',
-        ]);
+        return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil dihapus.');
     }
 }
