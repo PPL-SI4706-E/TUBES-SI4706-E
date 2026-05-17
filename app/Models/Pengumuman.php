@@ -10,4 +10,18 @@ class Pengumuman extends Model
     use HasFactory;
 
     protected $table = 'pengumuman';
+
+    protected $fillable = [
+        'user_id',
+        'judul',
+        'isi',
+        'kategori',
+        'is_penting',
+        'tanggal_post',
+    ];
+
+    protected $casts = [
+        'tanggal_post' => 'date',
+        'is_penting' => 'boolean',
+    ];
 }

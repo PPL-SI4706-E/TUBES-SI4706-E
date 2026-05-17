@@ -51,6 +51,7 @@
                     ['route' => 'admin.pembayaran.index',     'label' => 'Kelola Pembayaran',  'icon' => 'credit-card'],
                     ['route' => 'admin.kinerja.index',        'label' => 'Kinerja Petugas',    'icon' => 'bar-chart-3'],
                     ['route' => 'admin.pengumuman.index',     'label' => 'Pengumuman',         'icon' => 'megaphone'],
+                    ['route' => 'admin.testimoni.index',      'label' => 'Testimoni Publik',   'icon' => 'messages-square'],
                 ];
             @endphp
 

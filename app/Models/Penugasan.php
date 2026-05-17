@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Penugasan extends Model
 {
     use HasFactory;
+
     protected $table = 'penugasan';
 
     protected $fillable = [
@@ -36,11 +37,11 @@ class Penugasan extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
-    /** Ulasan/rating yang diberikan oleh warga setelah tugas selesai (via laporan). */
+  
+    /** Ulasan/rating yang diberikan oleh warga setelah tugas selesai. */
     public function ulasan()
     {
-        return $this->hasOne(Ulasan::class, 'laporan_id', 'laporan_id');
+        return $this->hasOne(Ulasan::class, 'penugasan_id');
     }
 
     /** Bukti penyelesaian yang diupload petugas. */

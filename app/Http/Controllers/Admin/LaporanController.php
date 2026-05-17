@@ -143,15 +143,17 @@ class LaporanController extends Controller
 
         // NFR-02: Reliabilitas transaksi (Atomisitas)
         DB::transaction(function () use ($laporan, $petugas, $request) {
-            $penugasan                    = new Penugasan();
-            $penugasan->laporan_id        = $laporan->id;
-            $penugasan->user_id           = $petugas->id;
+            // Buat penugasan
+            $penugasan = new Penugasan();
+            $penugasan->laporan_id = $laporan->id;
+            $penugasan->user_id = $petugas->id;
             $penugasan->tanggal_penugasan = now()->toDateString();
-            $penugasan->status_tugas      = 'Ditugaskan';
-            $penugasan->catatan_admin     = $request->catatan_admin;
+            $penugasan->status_tugas = 'Ditugaskan';
+            $penugasan->catatan_admin = $request->catatan_admin;
             $penugasan->save();
 
-            $laporan->status = 'dikerjakan';
+            // Update status laporan
+            $laporan->status = 'dikerjakan'; // Di database enumnya 'dikerjakan' (bukan 'ditugaskan')
             $laporan->save();
         });
 

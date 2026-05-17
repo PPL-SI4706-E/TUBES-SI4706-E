@@ -41,12 +41,23 @@ class LaporanController extends Controller
     {
         $data = $r->validate([
             'kategori_laporan_id' => 'required|exists:kategori_laporan,id',
-            'wilayah_id' => 'required|exists:wilayah,id',
-            'deskripsi' => 'required|string',
-            'alamat' => 'nullable|string|max:255',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'foto' => 'nullable|image|max:5120'
+            'wilayah_id'          => 'required|exists:wilayah,id',
+            'deskripsi'           => 'required|string|min:10',
+            'alamat'              => 'nullable|string|max:255',
+            'map_marked'          => 'required|in:1',          // wajib klik peta
+            'latitude'            => 'required|numeric',
+            'longitude'           => 'required|numeric',
+            'foto'                => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ], [
+            'kategori_laporan_id.required' => 'Kategori masalah wajib dipilih.',
+            'wilayah_id.required'          => 'Wilayah wajib dipilih.',
+            'deskripsi.required'           => 'Deskripsi masalah wajib diisi.',
+            'deskripsi.min'                => 'Deskripsi masalah minimal 10 karakter.',
+            'map_marked.required'          => 'Titik lokasi wajib ditentukan di peta.',
+            'map_marked.in'                => 'Titik lokasi wajib ditentukan di peta.',
+            'foto.image'                   => 'File yang diunggah harus berupa foto (JPG/PNG).',
+            'foto.mimes'                   => 'Format foto tidak didukung. Gunakan JPG atau PNG.',
+            'foto.max'                      => 'Ukuran foto maksimal 5MB.',
         ]);
 
         $fotoPath = null;

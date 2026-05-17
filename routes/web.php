@@ -21,6 +21,9 @@ use Illuminate\Support\Facades\Route;
 // ── Public (tanpa login) ──────────────────────────────────────────────────────
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/pengumuman/{id}', [PublicController::class, 'pengumumanDetail'])->name('pengumuman.detail');
+Route::post('/testimoni', [PublicController::class, 'storeTestimoni'])->name('testimoni.store');
+Route::put('/testimoni/{testimoni}', [PublicController::class, 'updateTestimoni'])->name('testimoni.update');
+Route::delete('/testimoni/{testimoni}', [PublicController::class, 'destroyTestimoni'])->name('testimoni.destroy');
 
 // ── Auth — FR-03 | PB3 ────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -95,9 +98,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // TODO: FR-16 — Pengumuman (Sprint 1)
     Route::prefix('pengumuman')->name('pengumuman.')->controller(PengumumanController::class)->group(function () {
         Route::get('/',                    'index')->name('index');
+        Route::get('/create',              'create')->name('create');
         Route::post('/',                   'store')->name('store');
+        Route::get('/{pengumuman}/edit',   'edit')->name('edit');
         Route::put('/{pengumuman}',        'update')->name('update');
         Route::delete('/{pengumuman}',     'destroy')->name('destroy');
+    });
+
+    Route::prefix('testimoni')->name('testimoni.')->controller(\App\Http\Controllers\Admin\TestimoniPublikController::class)->group(function () {
+        Route::get('/',                  'index')->name('index');
+        Route::patch('/{testimoni}/approve', 'approve')->name('approve');
+        Route::patch('/{testimoni}/reject',  'reject')->name('reject');
+        Route::delete('/{testimoni}',    'destroy')->name('destroy');
     });
 });
 
