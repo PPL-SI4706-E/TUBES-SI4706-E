@@ -47,4 +47,10 @@ class Laporan extends Model
     {
         return $this->hasOne(Pembayaran::class);
     }
+
+    /** Penugasan/Work Order yang terkait dengan laporan ini. */
+    public function penugasan()
+    {
+        return $this->hasOne(Penugasan::class, 'laporan_id');
+    }
 }
