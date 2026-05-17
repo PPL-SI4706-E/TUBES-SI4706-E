@@ -184,6 +184,48 @@
 
         {{-- ── FORM VALIDASI (hanya saat status pending) ── --}}
         @if($laporan->status === 'pending')
+        @php
+            $pembayaran    = $laporan->pembayaran;
+            $bayarLunas    = optional($pembayaran)->status_pembayaran === 'Lunas';
+            $statusBayar   = optional($pembayaran)->status_pembayaran ?? 'Tidak ada data';
+        @endphp
+
+        {{-- ── PAYMENT LOCK BANNER ── --}}
+        @if(!$bayarLunas)
+        <div class="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden">
+            <div class="p-4 bg-orange-50 border-b border-orange-100 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-orange-900 text-sm">Validasi Terkunci</h3>
+                    <p class="text-xs text-orange-700 mt-0.5 leading-relaxed">
+                        Laporan ini belum dapat divalidasi karena pembayaran belum diverifikasi.
+                    </p>
+                </div>
+            </div>
+            <div class="p-5">
+                <div class="flex items-center gap-3 bg-orange-50 rounded-lg p-3 border border-orange-100 mb-4">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-orange-500 shrink-0"></i>
+                    <div>
+                        <p class="text-xs text-orange-700 font-semibold">Status Pembayaran</p>
+                        <p class="text-sm font-bold text-orange-800 mt-0.5">
+                            {{ $statusBayar }}
+                        </p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    Verifikasi pembayaran terlebih dahulu di menu <strong>Kelola Pembayaran</strong> sebelum memvalidasi laporan ini.
+                </p>
+                <a href="{{ route('admin.pembayaran.index') }}"
+                   class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    Ke Kelola Pembayaran
+                </a>
+            </div>
+        </div>
+        @else
+        {{-- ── FORM VALIDASI (pembayaran sudah Lunas) ── --}}
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
              x-data="{ action: '{{ old('status', '') }}' }">
 
@@ -316,10 +358,11 @@
                     <span x-show="action === 'diterima'">Terima &amp; Tugaskan Petugas</span>
                     <span x-show="action === 'selesai'">Tandai Selesai (Solusi Virtual)</span>
                     <span x-show="action === 'ditolak'">Tolak Laporan</span>
-                    <span x-show="action === ''"       class="text-slate-500">Pilih Aksi Terlebih Dahulu</span>
+                    <span x-show="action === ''" class="text-slate-500">Pilih Aksi Terlebih Dahulu</span>
                 </button>
             </form>
         </div>
+        @endif
 
         {{-- ── STATUS BOX (bukan pending) ── --}}
         @else
