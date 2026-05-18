@@ -7,8 +7,6 @@ use App\Http\Requests\FilterLaporanRequest;
 use App\Models\KategoriLaporan;
 use App\Models\Laporan;
 use App\Models\Wilayah;
-use App\Models\KategoriLaporan;
-use App\Models\Laporan;
 use App\Models\Penugasan;
 use App\Models\User;
 use Illuminate\Http\Request;

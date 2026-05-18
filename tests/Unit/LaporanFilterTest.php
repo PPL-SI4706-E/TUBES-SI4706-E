@@ -22,7 +22,7 @@ class LaporanFilterTest extends TestCase
     {
         $match = User::factory()->masyarakat()->create(['name' => 'Siti Aminah']);
         $matchingLaporan = Laporan::factory()->create(['user_id' => $match->id]);
-        Laporan::factory()->create(); // noise
+        Laporan::factory()->create(['user_id' => User::factory()->masyarakat()->create(['name' => 'Budi Mamat'])->id]); // noise
 
         $resultIds = Laporan::query()->filterKeyword('Siti')->pluck('id');
 
@@ -235,7 +235,7 @@ class LaporanFilterTest extends TestCase
     {
         $wilayah  = Wilayah::factory()->create();
         $matching = Laporan::factory()->create(['wilayah_id' => $wilayah->id]);
-        Laporan::factory()->create(); // noise — different wilayah
+        Laporan::factory()->create(['wilayah_id' => Wilayah::factory()->create()->id]); // noise — different wilayah
 
         $resultIds = Laporan::query()->filterWilayah($wilayah->id)->pluck('id');
 
@@ -270,7 +270,7 @@ class LaporanFilterTest extends TestCase
     {
         $kategori = KategoriLaporan::factory()->create();
         $matching = Laporan::factory()->create(['kategori_laporan_id' => $kategori->id]);
-        Laporan::factory()->create(); // noise — different kategori
+        Laporan::factory()->create(['kategori_laporan_id' => KategoriLaporan::factory()->create()->id]); // noise — different kategori
 
         $resultIds = Laporan::query()->filterKategori($kategori->id)->pluck('id');
 

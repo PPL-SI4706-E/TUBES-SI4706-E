@@ -13,7 +13,7 @@ return new class extends Migration
                 $table->foreignId('penugasan_id')
                     ->nullable()
                     ->after('id')
-                    ->constrained('penugasans')
+                    ->constrained('penugasan')
                     ->nullOnDelete();
             }
         });

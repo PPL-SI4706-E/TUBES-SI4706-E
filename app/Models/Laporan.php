@@ -65,6 +65,16 @@ class Laporan extends Model
         return $this->hasOne(Pembayaran::class);
     }
 
+    public function penugasan()
+    {
+        return $this->hasOne(Penugasan::class, 'laporan_id');
+    }
+
+    public function ulasan()
+    {
+        return $this->hasOne(Ulasan::class, 'laporan_id');
+    }
+
     public function scopeFilterKeyword(Builder $query, ?string $keyword): Builder
     {
         if (blank($keyword)) {

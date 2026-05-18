@@ -40,7 +40,7 @@ class Penugasan extends Model
   
     public function ulasan()
     {
-        return $this->hasOne(Ulasan::class, 'laporan_id', 'laporan_id');
+        return $this->hasOne(Ulasan::class, 'penugasan_id');
     }
 
     /** Bukti penyelesaian yang diupload petugas. */
