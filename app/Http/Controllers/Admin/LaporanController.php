@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FilterLaporanRequest;
+use App\Models\KategoriLaporan;
+use App\Models\Laporan;
+use App\Models\Wilayah;
 use App\Models\KategoriLaporan;
 use App\Models\Laporan;
 use App\Models\Penugasan;
@@ -12,47 +16,30 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanController extends Controller
 {
-    public function index(Request $request)
+    public function index(FilterLaporanRequest $request)
     {
-        $query = Laporan::with([
-            'kategoriLaporan', 'wilayah', 'user', 'penugasan', 'pembayaran',
-        ])->latest();
+        $filters = $request->validated();
 
-        // Filter: status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
+        $laporans = Laporan::query()
+            ->filterKeyword($filters['keyword'] ?? null)
+            ->filterStatusBayar($filters['status_bayar'] ?? null)
+            ->filterRentangBulan($filters['bulan_awal'] ?? null, $filters['bulan_akhir'] ?? null)
+            ->filterWilayah($filters['wilayah_id'] ?? null)
+            ->filterKategori($filters['kategori_id'] ?? null)
+            ->with(['kategoriLaporan', 'wilayah', 'user', 'pembayaran'])
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
-        // Filter: kategori
-        if ($request->filled('kategori')) {
-            $query->where('kategori_laporan_id', $request->kategori);
-        }
+        $wilayahs = Wilayah::query()
+            ->orderBy('nama_wilayah')
+            ->get();
 
-        // Filter: turun lapangan (ada penugasan = ya)
-        if ($request->filled('turun')) {
-            if ($request->turun === 'ya') {
-                $query->whereHas('penugasan');
-            } elseif ($request->turun === 'tidak') {
-                $query->whereDoesntHave('penugasan');
-            }
-        }
+        $kategoris = KategoriLaporan::query()
+            ->orderBy('nama_kategori')
+            ->get();
 
-        // Filter: pencarian ID, alamat, deskripsi
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                if (is_numeric($search)) {
-                    $q->where('id', $search);
-                }
-                $q->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('deskripsi', 'like', "%{$search}%");
-            });
-        }
-
-        $laporans  = $query->paginate(15)->withQueryString();
-        $kategoris = KategoriLaporan::orderBy('nama_kategori')->get();
-
-        return view('admin.laporan.index', compact('laporans', 'kategoris'));
+        return view('admin.laporan.index', compact('laporans', 'wilayahs', 'kategoris'));
     }
 
     public function peta()
