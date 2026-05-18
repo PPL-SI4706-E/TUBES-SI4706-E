@@ -184,6 +184,48 @@
 
         {{-- ── FORM VALIDASI (hanya saat status pending) ── --}}
         @if($laporan->status === 'pending')
+        @php
+            $pembayaran    = $laporan->pembayaran;
+            $bayarLunas    = optional($pembayaran)->status_pembayaran === 'Lunas';
+            $statusBayar   = optional($pembayaran)->status_pembayaran ?? 'Tidak ada data';
+        @endphp
+
+        {{-- ── PAYMENT LOCK BANNER ── --}}
+        @if(!$bayarLunas)
+        <div class="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden">
+            <div class="p-4 bg-orange-50 border-b border-orange-100 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-orange-900 text-sm">Validasi Terkunci</h3>
+                    <p class="text-xs text-orange-700 mt-0.5 leading-relaxed">
+                        Laporan ini belum dapat divalidasi karena pembayaran belum diverifikasi.
+                    </p>
+                </div>
+            </div>
+            <div class="p-5">
+                <div class="flex items-center gap-3 bg-orange-50 rounded-lg p-3 border border-orange-100 mb-4">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-orange-500 shrink-0"></i>
+                    <div>
+                        <p class="text-xs text-orange-700 font-semibold">Status Pembayaran</p>
+                        <p class="text-sm font-bold text-orange-800 mt-0.5">
+                            {{ $statusBayar }}
+                        </p>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+                    Verifikasi pembayaran terlebih dahulu di menu <strong>Kelola Pembayaran</strong> sebelum memvalidasi laporan ini.
+                </p>
+                <a href="{{ route('admin.pembayaran.index') }}"
+                   class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    Ke Kelola Pembayaran
+                </a>
+            </div>
+        </div>
+        @else
+        {{-- ── FORM VALIDASI (pembayaran sudah Lunas) ── --}}
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
              x-data="{ action: '{{ old('status', '') }}' }">
 
@@ -316,14 +358,15 @@
                     <span x-show="action === 'diterima'">Terima &amp; Tugaskan Petugas</span>
                     <span x-show="action === 'selesai'">Tandai Selesai (Solusi Virtual)</span>
                     <span x-show="action === 'ditolak'">Tolak Laporan</span>
-                    <span x-show="action === ''"       class="text-slate-500">Pilih Aksi Terlebih Dahulu</span>
+                    <span x-show="action === ''" class="text-slate-500">Pilih Aksi Terlebih Dahulu</span>
                 </button>
             </form>
         </div>
+        @endif
 
         {{-- ── STATUS BOX (bukan pending) ── --}}
         @else
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5" x-data="{ showAssignModal: false, selectedPetugas: '' }">
             <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
                 Status Terkini
             </h3>
@@ -366,23 +409,173 @@
                     </div>
                 </div>
             @elseif($laporan->status === 'dikerjakan')
+                {{-- Info penugasan: tampilkan siapa petugasnya --}}
+                @php $wo = $laporan->penugasan; @endphp
                 <div class="flex items-start gap-3 bg-cyan-50 p-4 rounded-lg border border-cyan-100 text-cyan-700">
                     <i data-lucide="hammer" class="w-5 h-5 shrink-0 mt-0.5"></i>
-                    <div>
+                    <div class="w-full">
                         <p class="font-bold text-sm">Sedang Dikerjakan</p>
-                        <p class="text-xs text-cyan-600/80 mt-1">Petugas lapangan sedang menangani laporan ini.</p>
+                        @if($wo && $wo->petugas)
+                            <div class="mt-3 bg-white rounded-lg border border-cyan-100 p-3 space-y-2">
+                                {{-- Petugas yang ditugaskan --}}
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm border border-sky-200 shrink-0">
+                                        {{ strtoupper(substr($wo->petugas->name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800 text-sm">{{ $wo->petugas->name }}</p>
+                                        <p class="text-xs text-slate-500">{{ $wo->petugas->wilayah->nama_wilayah ?? '-' }}</p>
+                                    </div>
+                                </div>
+                                {{-- Status tugas & tanggal --}}
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                                    <span class="inline-flex items-center gap-1 bg-cyan-100 text-cyan-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                        <i data-lucide="clock" class="w-3 h-3"></i>
+                                        {{ $wo->status_tugas }}
+                                    </span>
+                                    <span class="text-[10px] text-slate-400">
+                                        Ditugaskan: {{ \Carbon\Carbon::parse($wo->tanggal_penugasan)->format('d M Y') }}
+                                    </span>
+                                </div>
+                                {{-- Catatan Work Order --}}
+                                @if($wo->catatan_admin)
+                                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs text-slate-600">
+                                        <span class="font-semibold text-slate-700 block mb-0.5">Catatan Work Order:</span>
+                                        {{ $wo->catatan_admin }}
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <p class="text-xs text-cyan-600/80 mt-1">Petugas lapangan sedang menangani laporan ini.</p>
+                        @endif
                     </div>
                 </div>
             @endif
 
             @if($laporan->status === 'diterima')
             <div class="mt-4 pt-4 border-t border-slate-100">
-                <a href="#"
-                   class="w-full flex items-center justify-center gap-2 bg-sky-100 text-sky-400 font-medium py-2 rounded-lg text-sm cursor-not-allowed select-none"
-                   title="Fitur penugasan (PBI berikutnya)">
+                <button type="button"
+                   dusk="btn-tugaskan-petugas"
+                   @click="showAssignModal = true"
+                   class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">
                     <i data-lucide="user-plus" class="w-4 h-4"></i> Tugaskan Petugas
-                </a>
-                <p class="text-[10px] text-slate-400 text-center mt-1.5">Tersedia pada PBI berikutnya.</p>
+                </button>
+            </div>
+
+            {{-- ── MODAL PENUGASAN ── --}}
+            <div x-show="showAssignModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+                <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="showAssignModal = false"></div>
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                    <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg w-full"
+                         @click.away="showAssignModal = false">
+                        
+                        {{-- Header Modal --}}
+                        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-sky-900">Buat Work Order #{{ $laporan->id }}</h3>
+                            <button @click="showAssignModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        {{-- Body Modal --}}
+                        <div class="px-6 py-5 space-y-5">
+                            {{-- Info Lokasi --}}
+                            <div class="bg-sky-50 rounded-xl p-4 border border-sky-100">
+                                <p class="text-sky-700 mb-1.5 flex items-center gap-2 font-bold text-sm">
+                                    <i data-lucide="map-pin" class="w-4 h-4"></i> Area Penugasan
+                                </p>
+                                <p class="text-slate-800 text-sm">{{ $laporan->alamat }}</p>
+                                <p class="text-slate-600 text-xs mt-1">Wilayah: <span class="font-semibold text-sky-800">{{ $laporan->wilayah->nama_wilayah ?? '-' }}</span></p>
+                            </div>
+
+                            <form action="{{ route('admin.laporan.assign', $laporan->id) }}" method="POST" id="formAssign">
+                                @csrf
+                                <input type="hidden" name="petugas_id" x-model="selectedPetugas">
+                                
+                                {{-- Daftar Petugas --}}
+                                <div>
+                                    <label class="text-sky-800 mb-2 block font-bold text-sm">Pilih Petugas Lapangan</label>
+                                    <div class="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                        @php
+                                            // Urutkan petugas yang area kerjanya sama agar berada di atas
+                                            $sortedPetugas = collect($petugas ?? [])->sortByDesc(function($p) use ($laporan) {
+                                                return $p->wilayah_id == $laporan->wilayah_id ? 1 : 0;
+                                            });
+                                        @endphp
+
+                                        @forelse($sortedPetugas as $p)
+                                            @php
+                                                $isMatchArea = $p->wilayah_id == $laporan->wilayah_id;
+                                            @endphp
+                                            <button type="button"
+                                                id="petugas-btn-{{ $p->id }}"
+                                                @click="selectedPetugas = '{{ $p->id }}'"
+                                                class="w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left focus:outline-none"
+                                                :class="selectedPetugas === '{{ $p->id }}'
+                                                    ? 'bg-sky-50 border-sky-400'
+                                                    : 'bg-white border-slate-200 hover:border-sky-200 hover:bg-sky-50/30'"
+                                            >
+                                                {{-- Avatar --}}
+                                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 {{ $isMatchArea ? 'bg-emerald-500' : 'bg-slate-400' }}">
+                                                    {{ strtoupper(substr($p->name, 0, 1)) }}
+                                                </div>
+                                                {{-- Info Petugas --}}
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-slate-800 font-bold text-sm">{{ $p->name }}</p>
+                                                    <p class="text-slate-500 text-xs mt-0.5 truncate">
+                                                        Area: {{ $p->wilayah->nama_wilayah ?? 'Belum ditentukan' }}
+                                                    </p>
+                                                </div>
+                                                {{-- Badge kanan --}}
+                                                <div class="flex items-center gap-1.5 shrink-0">
+                                                    @if($isMatchArea)
+                                                        <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                                                            ✓ Sesuai Area
+                                                        </span>
+                                                    @endif
+                                                    <div x-show="selectedPetugas === '{{ $p->id }}'" class="text-sky-600">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        @empty
+                                            <div class="text-center py-4 text-slate-500 text-sm">
+                                                Tidak ada petugas tersedia.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    @error('petugas_id')
+                                        <p class="text-red-500 text-xs mt-1.5 font-medium">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                {{-- Catatan --}}
+                                <div class="mt-4">
+                                    <label class="text-sky-800 mb-1.5 flex items-center gap-2 font-bold text-sm">
+                                        <i data-lucide="clipboard-list" class="w-4 h-4"></i> Catatan Work Order (Opsional)
+                                    </label>
+                                    <textarea name="catatan_admin"
+                                        placeholder="Tulis instruksi khusus atau detail material yang harus dibawa..."
+                                        class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300 h-20 resize-none text-sm"
+                                    >{{ old('catatan_admin') }}</textarea>
+                                </div>
+
+                                {{-- Action --}}
+                                <div class="mt-6">
+                                    <button type="submit"
+                                        dusk="btn-submit-penugasan"
+                                        :disabled="!selectedPetugas"
+                                        class="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-colors font-bold text-sm"
+                                        :class="selectedPetugas ? 'bg-sky-600 hover:bg-sky-700 text-white shadow-md shadow-sky-200' : 'bg-slate-100 text-slate-400 cursor-not-allowed'"
+                                    >
+                                        <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                        Tugaskan Sekarang
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
             @endif
         </div>

@@ -14,6 +14,7 @@ use App\Http\Controllers\Masyarakat\LaporanController as WargaLaporanController;
 use App\Http\Controllers\Masyarakat\PembayaranController as WargaPembayaranController;
 use App\Http\Controllers\Masyarakat\UlasanController;
 use App\Http\Controllers\Petugas\TugasController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Profile (semua role) ──────────────────────────────────────────────────────
+Route::middleware('auth')->prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
+    Route::get('/',         'show')->name('show');
+    Route::patch('/',       'update')->name('update');
+    Route::patch('/password', 'updatePassword')->name('password');
+});
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
@@ -90,7 +98,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // TODO: FR-16 — Pengumuman (Sprint 1)
     Route::prefix('pengumuman')->name('pengumuman.')->controller(PengumumanController::class)->group(function () {
         Route::get('/',                    'index')->name('index');
+        Route::get('/create',              'create')->name('create');
         Route::post('/',                   'store')->name('store');
+        Route::get('/{pengumuman}/edit',   'edit')->name('edit');
         Route::put('/{pengumuman}',        'update')->name('update');
         Route::delete('/{pengumuman}',     'destroy')->name('destroy');
     });
