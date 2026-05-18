@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KategoriLaporan;
 use App\Models\Laporan;
 use App\Models\Penugasan;
 use App\Models\User;
@@ -13,30 +14,45 @@ class LaporanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Laporan::with(['kategoriLaporan', 'wilayah', 'user'])->latest();
+        $query = Laporan::with([
+            'kategoriLaporan', 'wilayah', 'user', 'penugasan', 'pembayaran',
+        ])->latest();
 
-        // Filter berdasarkan status
+        // Filter: status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Pencarian berdasarkan ID, alamat, atau deskripsi
+        // Filter: kategori
+        if ($request->filled('kategori')) {
+            $query->where('kategori_laporan_id', $request->kategori);
+        }
+
+        // Filter: turun lapangan (ada penugasan = ya)
+        if ($request->filled('turun')) {
+            if ($request->turun === 'ya') {
+                $query->whereHas('penugasan');
+            } elseif ($request->turun === 'tidak') {
+                $query->whereDoesntHave('penugasan');
+            }
+        }
+
+        // Filter: pencarian ID, alamat, deskripsi
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                // Cari berdasarkan ID (jika input numerik)
                 if (is_numeric($search)) {
                     $q->where('id', $search);
                 }
-                // Cari berdasarkan alamat
                 $q->orWhere('alamat', 'like', "%{$search}%")
-                  // Cari berdasarkan deskripsi
                   ->orWhere('deskripsi', 'like', "%{$search}%");
             });
         }
 
-        $laporans = $query->paginate(15)->withQueryString();
-        return view('admin.laporan.index', compact('laporans'));
+        $laporans  = $query->paginate(15)->withQueryString();
+        $kategoris = KategoriLaporan::orderBy('nama_kategori')->get();
+
+        return view('admin.laporan.index', compact('laporans', 'kategoris'));
     }
 
     public function peta()
@@ -49,19 +65,19 @@ class LaporanController extends Controller
     {
         $laporan = Laporan::with([
             'kategoriLaporan', 'wilayah', 'user', 'mapLokasi',
-            'penugasan.petugas.wilayah',   // eager-load untuk tampilan info penugasan
+            'penugasan.petugas.wilayah',
+            'pembayaran',
         ])->findOrFail($id);
 
         $petugas = [];
         if ($laporan->status === 'diterima') {
-            $petugas = User::role('petugas')->with('wilayah')->get();
+            $petugas = User::where('role', 'petugas')->with('wilayah')->get();
         }
         return view('admin.laporan.show', compact('laporan', 'petugas'));
     }
 
     public function validasi(Request $request, $id)
     {
-        // Validasi input — status dan catatan_admin wajib untuk semua aksi
         $request->validate([
             'status'        => 'required|in:diterima,selesai,ditolak',
             'catatan_admin' => 'required|string|min:5',
@@ -72,13 +88,23 @@ class LaporanController extends Controller
             'catatan_admin.min'      => 'Catatan minimal 5 karakter.',
         ]);
 
-        $laporan = Laporan::findOrFail($id);
+        $laporan = Laporan::with('pembayaran')->findOrFail($id);
 
         // Hanya laporan berstatus pending yang bisa divalidasi
         if ($laporan->status !== 'pending') {
             return redirect()->route('admin.laporan.show', $laporan->id)
                 ->with('error', 'Laporan ini sudah pernah divalidasi.');
         }
+
+        // ── PAYMENT GUARD ─────────────────────────────────────────────────────
+        // Laporan hanya bisa divalidasi jika pembayaran sudah berstatus 'Lunas'
+        $pembayaran = $laporan->pembayaran;
+
+        if (!$pembayaran || $pembayaran->status_pembayaran !== 'Lunas') {
+            return redirect()->route('admin.laporan.show', $laporan->id)
+                ->with('error', 'Laporan tidak dapat divalidasi. Pembayaran belum diverifikasi (Lunas).');
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         $laporan->status        = $request->status;
         $laporan->catatan_admin = $request->catatan_admin;
@@ -97,11 +123,11 @@ class LaporanController extends Controller
     public function assign(Request $request, $id)
     {
         $request->validate([
-            'petugas_id' => 'required|exists:user,id',
+            'petugas_id'    => 'required|exists:user,id',
             'catatan_admin' => 'nullable|string',
         ], [
             'petugas_id.required' => 'Petugas harus dipilih.',
-            'petugas_id.exists' => 'Petugas tidak valid.',
+            'petugas_id.exists'   => 'Petugas tidak valid.',
         ]);
 
         $laporan = Laporan::findOrFail($id);

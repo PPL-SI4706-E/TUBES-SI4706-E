@@ -22,7 +22,7 @@
                 </div>
                 <span class="text-white tracking-wide" style="font-size:1.2rem;font-weight:700">TirtaBantu</span>
             </div>
-            <div class="bg-white/10 rounded-lg p-3">
+            <a href="{{ route('profile.show') }}" class="block bg-white/10 rounded-lg p-3 hover:bg-white/15 transition-colors">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-sky-400/30 rounded-full flex items-center justify-center text-white shrink-0"
                          style="font-weight:600;font-size:0.85rem">
@@ -33,7 +33,7 @@
                         <p class="text-sky-300 mt-0.5" style="font-size:0.7rem">Masyarakat</p>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
@@ -58,7 +58,13 @@
             @endforeach
         </nav>
 
-        <div class="p-3 border-t border-white/10">
+        <div class="p-3 border-t border-white/10 space-y-0.5">
+            <a href="{{ route('profile.show') }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all {{ request()->routeIs('profile.*') ? 'bg-white/15 text-white shadow-sm' : 'text-white/60 hover:bg-white/5 hover:text-white/90' }}"
+               style="font-size:0.85rem">
+                <i data-lucide="user-circle" class="w-[18px] h-[18px] shrink-0"></i>
+                Profil Saya
+            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"

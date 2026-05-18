@@ -14,7 +14,10 @@ class LaporanController extends Controller
 {
     public function index()
     {
-        $laporans = Laporan::with(['kategoriLaporan', 'mapLokasi'])->where('user_id', auth()->id())->latest()->get();
+        $laporans = Laporan::with(['kategoriLaporan', 'mapLokasi', 'ulasan'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
         return view('warga.laporan.index', compact('laporans'));
     }
 
@@ -27,7 +30,10 @@ class LaporanController extends Controller
 
     public function show($id)
     {
-        $laporan = Laporan::with('mapLokasi')->where('user_id', auth()->id())->findOrFail($id);
+        $laporan = Laporan::with(['mapLokasi', 'kategoriLaporan', 'wilayah', 'penugasan.penyelesaian', 'penugasan.petugas', 'pembayaran', 'ulasan'])
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
+
         return view('warga.laporan.show', compact('laporan'));
     }
 
@@ -80,16 +86,59 @@ class LaporanController extends Controller
         ]);
 
         // AUTOMATIC PAYMENT CREATION (Sinkronisasi Otomatis)
+        $tarif = (float) $kategori->tarif;
         \App\Models\Pembayaran::create([
             'laporan_id' => $laporan->id,
             'user_id' => auth()->id(),
-            'harga' => $kategori->tarif,
-            'metode_pembayaran' => $kategori->tarif == 0 ? 'Sistem (Gratis)' : null,
-            'status_pembayaran' => $kategori->tarif == 0 ? 'Lunas' : 'Menunggu',
+            'harga' => $tarif,
+            'metode_pembayaran' => $tarif <= 0 ? 'Sistem (Gratis)' : null,
+            'status_pembayaran' => $tarif <= 0 ? 'Lunas' : 'Menunggu',
         ]);
 
         return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.');
     }
 
-    public function konfirmasi(Request $r, $id) { return back(); }
+    public function konfirmasi(Request $r, $id)
+    {
+        $laporan = Laporan::with(['penugasan', 'ulasan'])
+            ->where('user_id', auth()->id())
+            ->findOrFail($id);
+
+        // Hanya boleh konfirmasi jika status menunggu_konfirmasi
+        if ($laporan->status !== 'menunggu_konfirmasi') {
+            return back()->with('error', 'Laporan ini tidak dalam status menunggu konfirmasi.');
+        }
+
+        // Cegah double-submit ulasan
+        if ($laporan->ulasan) {
+            return back()->with('error', 'Anda sudah memberikan ulasan untuk laporan ini.');
+        }
+
+        $r->validate([
+            'rating'   => 'required|integer|min:1|max:5',
+            'komentar' => 'nullable|string|max:1000',
+        ], [
+            'rating.required' => 'Mohon berikan rating bintang.',
+        ]);
+
+        // Simpan Ulasan
+        \App\Models\Ulasan::create([
+            'laporan_id'     => $laporan->id,
+            'user_id'        => auth()->id(),
+            'rating'         => $r->rating,
+            'komentar'       => $r->komentar,
+            'tanggal_ulasan' => now()->toDateString(),
+        ]);
+
+        // Update status Laporan → selesai (spesifik berdasarkan ID)
+        Laporan::where('id', $laporan->id)
+            ->update(['status' => 'selesai']);
+
+        // Update status Penugasan → Selesai
+        if ($laporan->penugasan) {
+            $laporan->penugasan->update(['status_tugas' => 'Selesai']);
+        }
+
+        return back()->with('success', 'Terima kasih! Konfirmasi dan ulasan Anda telah tersimpan. Laporan dinyatakan selesai.');
+    }
 }

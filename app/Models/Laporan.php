@@ -53,4 +53,9 @@ class Laporan extends Model
     {
         return $this->hasOne(Penugasan::class, 'laporan_id');
     }
+
+    public function ulasan()
+    {
+        return $this->hasOne(Ulasan::class, 'laporan_id');
+    }
 }
