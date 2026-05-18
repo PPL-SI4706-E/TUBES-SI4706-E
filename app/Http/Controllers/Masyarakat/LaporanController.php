@@ -100,7 +100,7 @@ class LaporanController extends Controller
 
     public function konfirmasi(Request $r, $id)
     {
-        $laporan = Laporan::with(['penugasan', 'ulasan'])
+        $laporan = Laporan::with(['penugasan.penyelesaian', 'ulasan'])
             ->where('user_id', auth()->id())
             ->findOrFail($id);
 
@@ -114,6 +114,43 @@ class LaporanController extends Controller
             return back()->with('error', 'Anda sudah memberikan ulasan untuk laporan ini.');
         }
 
+        $r->validate([
+            'action' => 'required|in:selesai,revisi',
+        ]);
+
+        if ($r->action === 'revisi') {
+            $r->validate([
+                'komentar' => 'required|string|max:1000',
+            ], [
+                'komentar.required' => 'Mohon berikan alasan revisi (komentar).',
+            ]);
+
+            // Hapus bukti penyelesaian jika ada
+            if ($laporan->penugasan && $laporan->penugasan->penyelesaian) {
+                if ($laporan->penugasan->penyelesaian->foto_bukti) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($laporan->penugasan->penyelesaian->foto_bukti);
+                }
+                $laporan->penugasan->penyelesaian()->delete();
+            }
+
+            // Update status Laporan ke dikerjakan
+            $laporan->update(['status' => 'dikerjakan']);
+
+            // Update status Penugasan kembali ke Sedang Dikerjakan & tambahkan catatan
+            if ($laporan->penugasan) {
+                $catatanBaru = $laporan->penugasan->catatan_admin;
+                $catatanBaru .= "\n\n--- Revisi dari Warga (" . now()->format('d/m/Y H:i') . ") ---\n" . $r->komentar;
+                
+                $laporan->penugasan->update([
+                    'status_tugas' => 'Sedang Dikerjakan',
+                    'catatan_admin' => trim($catatanBaru),
+                ]);
+            }
+
+            return back()->with('success', 'Permintaan revisi telah dikirim ke petugas. Laporan kembali ke status Sedang Dikerjakan.');
+        }
+
+        // Logika untuk action == 'selesai'
         $r->validate([
             'rating'   => 'required|integer|min:1|max:5',
             'komentar' => 'nullable|string|max:1000',

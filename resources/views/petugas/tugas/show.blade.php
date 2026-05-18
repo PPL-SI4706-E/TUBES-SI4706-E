@@ -311,8 +311,30 @@
                 </div>
                 @if($penugasan->catatan_admin)
                 <div class="pt-2 border-t border-slate-100">
-                    <p class="text-slate-400 mb-1" style="font-size:0.7rem">Catatan dari Admin</p>
-                    <p class="text-slate-700 text-sm leading-relaxed">{{ $penugasan->catatan_admin }}</p>
+                    @php
+                        $parts = explode('--- Revisi dari Warga', $penugasan->catatan_admin);
+                        $adminNote = trim($parts[0]);
+                    @endphp
+
+                    @if($adminNote)
+                        <p class="text-slate-400 mb-1" style="font-size:0.7rem">Catatan dari Admin</p>
+                        <p class="text-slate-700 text-sm leading-relaxed">{!! nl2br(e($adminNote)) !!}</p>
+                    @endif
+
+                    @for($i = 1; $i < count($parts); $i++)
+                        @php
+                            $revisiContent = trim($parts[$i]);
+                            // Format: " (TANGGAL) ---\n Komentar" -> ubah menjadi lebih rapi
+                            $revisiContent = str_replace(') ---', ')', $revisiContent);
+                        @endphp
+                        <div class="mt-3 bg-amber-50 rounded-xl p-3 border border-amber-200">
+                            <p class="text-amber-700 font-bold mb-1.5 flex items-center gap-1.5" style="font-size:0.75rem">
+                                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>
+                                Revisi dari Warga
+                            </p>
+                            <p class="text-amber-900 text-sm leading-relaxed">{!! nl2br(e($revisiContent)) !!}</p>
+                        </div>
+                    @endfor
                 </div>
                 @endif
             </div>

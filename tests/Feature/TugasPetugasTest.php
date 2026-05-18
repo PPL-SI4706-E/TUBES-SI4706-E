@@ -158,9 +158,9 @@ class TugasPetugasTest extends TestCase
         ]);
     }
 
-    // ── ATC-004 Upload Bukti ──────────────────────────────────────────────────
+    // ── DEV-71 (TC-10) Upload Bukti Penyelesaian ──────────────────────────────
 
-    public function test_ATC004_petugas_berhasil_upload_bukti(): void
+    public function test_TC1001_selesaikan_tugas_dan_upload_foto_berhasil(): void
     {
         Storage::fake('public');
         $petugas   = $this->makePetugas();
@@ -180,11 +180,25 @@ class TugasPetugasTest extends TestCase
             'penugasan_id' => $penugasan->id,
             'keterangan'   => 'Pipa telah diperbaiki.',
         ]);
+        
+        // Memastikan status laporan ikut berubah
+        $this->assertEquals('menunggu_konfirmasi', $penugasan->laporan->status);
     }
 
-    // ── ATC-005 Validasi Upload ───────────────────────────────────────────────
+    public function test_TC1002_gagal_upload_foto_ukuran_lebih_dari_5mb(): void
+    {
+        Storage::fake('public');
+        $petugas   = $this->makePetugas();
+        $penugasan = $this->makePenugasan($petugas, ['status_tugas' => 'Sedang Dikerjakan']);
 
-    public function test_ATC005_gagal_upload_bukti_tanpa_foto(): void
+        $response = $this->actingAs($petugas)->post(route('petugas.tugas.bukti', $penugasan->id), [
+            'foto_bukti' => UploadedFile::fake()->create('big.jpg', 7000, 'image/jpeg'), // 7MB > 5MB
+        ]);
+
+        $response->assertSessionHasErrors('foto_bukti');
+    }
+
+    public function test_TC1003_gagal_upload_tanpa_foto(): void
     {
         $petugas   = $this->makePetugas();
         $penugasan = $this->makePenugasan($petugas, ['status_tugas' => 'Sedang Dikerjakan']);
@@ -196,14 +210,14 @@ class TugasPetugasTest extends TestCase
         $response->assertSessionHasErrors('foto_bukti');
     }
 
-    public function test_gagal_upload_foto_terlalu_besar(): void
+    public function test_TC1004_gagal_upload_format_file_terlarang(): void
     {
         Storage::fake('public');
         $petugas   = $this->makePetugas();
         $penugasan = $this->makePenugasan($petugas, ['status_tugas' => 'Sedang Dikerjakan']);
 
         $response = $this->actingAs($petugas)->post(route('petugas.tugas.bukti', $penugasan->id), [
-            'foto_bukti' => UploadedFile::fake()->create('big.jpg', 6000, 'image/jpeg'), // 6MB > 5MB
+            'foto_bukti' => UploadedFile::fake()->create('document.pdf', 1024, 'application/pdf'), // PDF bukan gambar
         ]);
 
         $response->assertSessionHasErrors('foto_bukti');
