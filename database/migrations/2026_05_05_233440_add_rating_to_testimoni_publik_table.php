@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('testimoni_publik', function (Blueprint $table) {
-            $table->integer('rating')->nullable()->after('email');
-        });
+        if (!Schema::hasColumn('testimoni_publik', 'rating')) {
+            Schema::table('testimoni_publik', function (Blueprint $table) {
+                $table->integer('rating')->nullable()->after('email');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('testimoni_publik', function (Blueprint $table) {
-            $table->dropColumn('rating');
-        });
+        if (Schema::hasColumn('testimoni_publik', 'rating')) {
+            Schema::table('testimoni_publik', function (Blueprint $table) {
+                $table->dropColumn('rating');
+            });
+        }
     }
 };
