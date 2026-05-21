@@ -3,14 +3,9 @@
 
 @section('content')
 @php
-    // Mock data from Figma reference (github.com/rizkymavnsyh/Tirtabantu/src/app/data/mockData.ts)
-    $pengumumanList = [
-        ['id'=>1,'judul'=>'DARURAT: Pemadaman Air Wilayah Cianjur','isi'=>'Sehubungan dengan perbaikan pipa utama distribusi, aliran air PDAM di wilayah Kec. Cianjur akan dihentikan sementara pada tanggal 16-17 Maret 2026 pukul 08.00-17.00 WIB. Posko air darurat tersedia di Balai Desa Sukamaju. Mohon warga mempersiapkan cadangan air.','tgl_posting'=>'2026-03-14','penting'=>true,'kategori'=>'darurat'],
-        ['id'=>2,'judul'=>'Jadwal Pengiriman Tangki Air Darurat - Mekarjaya','isi'=>'Bagi warga Desa Mekarjaya yang terdampak kekeringan, pengiriman tangki air darurat akan dilakukan setiap hari Senin dan Kamis pukul 08.00 WIB di Balai Desa. Silakan bawa wadah masing-masing, maksimal 2 jerigen per KK.','tgl_posting'=>'2026-03-12','penting'=>true,'kategori'=>'jadwal'],
-        ['id'=>3,'judul'=>'Info Tarif Baru Sambungan Air 2026','isi'=>'Mulai April 2026, tarif pemasangan sambungan air baru menjadi Rp 1.500.000,- (sudah termasuk meteran dan pipa 10 meter). Pendaftaran bisa melalui aplikasi TirtaBantu atau kantor PDAM.','tgl_posting'=>'2026-03-10','penting'=>false,'kategori'=>'info'],
-        ['id'=>4,'judul'=>'Himbauan Hemat Air Musim Kemarau','isi'=>'Memasuki musim kemarau 2026, kami menghimbau seluruh warga untuk menghemat penggunaan air. Tips: tutup keran saat menyikat gigi, gunakan air bekas cucian untuk menyiram tanaman, periksa kebocoran pipa secara berkala.','tgl_posting'=>'2026-03-08','penting'=>false,'kategori'=>'info'],
-        ['id'=>5,'judul'=>'Gangguan Air Wilayah Cibadak','isi'=>'Terjadi kerusakan pipa distribusi utama di Kec. Cibadak. Tim teknis sedang melakukan perbaikan. Estimasi air kembali normal dalam 24-48 jam. Kami mohon maaf atas ketidaknyamanan ini.','tgl_posting'=>'2026-03-06','penting'=>true,'kategori'=>'gangguan'],
-    ];
+    $approvedTestimonials = $approvedTestimonials ?? collect();
+    $myTestimonial = $myTestimonial ?? null;
+    $pengumumanList = $pengumumanList ?? [];
 
     $kategoriIkon = [
         'darurat'  => 'bg-red-100 text-red-600',
@@ -33,8 +28,10 @@
         ['id'=>6,'nama'=>'Sambungan Baru',         'deskripsi'=>'Permohonan pemasangan sambungan air baru ke rumah',            'icon'=>'🏠','tarif'=>250000,'keterangan_tarif'=>'Biaya survey + pemasangan awal (DP). Total biaya tergantung jarak pipa, dibayar bertahap.'],
     ];
 
-    $featured = collect($pengumumanList)->firstWhere('kategori', 'darurat') ?? collect($pengumumanList)->firstWhere('penting', true);
-    $otherPengumuman = array_slice($pengumumanList, 1);
+    $featured = collect($pengumumanList)->firstWhere('kategori', 'darurat') ?? collect($pengumumanList)->firstWhere('penting', true) ?? collect($pengumumanList)->first();
+    $otherPengumuman = $featured
+        ? collect($pengumumanList)->reject(fn ($item) => $item['id'] === $featured['id'])->values()->all()
+        : [];
 
     $fiturList = [
         ['icon'=>'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z','title'=>'Pelaporan Detail','desc'=>'Buat laporan dengan alamat rumah lengkap, koordinat GPS, dan foto bukti. Admin tahu persis lokasinya.','color'=>'bg-blue-100 text-blue-600'],
@@ -74,6 +71,7 @@
                 <a href="#tarif"      class="text-sky-700 hover:text-sky-900 transition-colors">Tarif Layanan</a>
                 <a href="#fitur"      class="text-sky-700 hover:text-sky-900 transition-colors">Fitur</a>
                 <a href="#alur"       class="text-sky-700 hover:text-sky-900 transition-colors">Alur Pelaporan</a>
+                <a href="#testimoni"  class="text-sky-700 hover:text-sky-900 transition-colors">Testimoni</a>
                 <a href="#kontak"     class="text-sky-700 hover:text-sky-900 transition-colors">Kontak</a>
             </nav>
             @auth
@@ -83,9 +81,15 @@
                         : (auth()->user()->isPetugas() ? route('petugas.tugas.index') : route('warga.laporan.index'));
                     $loggedLabel = auth()->user()->isAdmin() ? 'Dashboard' : (auth()->user()->isPetugas() ? 'Tugas Saya' : 'Laporan Saya');
                 @endphp
-                <a href="{{ $loggedUrl }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">{{ $loggedLabel }}</a>
+                <div class="flex items-center gap-3">
+                    <a href="{{ $loggedUrl }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">{{ $loggedLabel }}</a>
+                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                        @csrf
+                        <button type="submit" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Logout</button>
+                    </form>
+                </div>
             @else
-                <a href="{{ route('register') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
+                <a href="{{ route('login') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
             @endauth
         </div>
     </header>
@@ -156,7 +160,7 @@
             @endif
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-                @foreach($otherPengumuman as $p)
+                @forelse($otherPengumuman as $p)
                     <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5">
                         <div class="flex items-center gap-2 mb-3">
                             <span class="{{ $kategoriIkon[$p['kategori']] }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p['kategori']] }}</span>
@@ -165,7 +169,14 @@
                         <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p['judul'] }}</h3>
                         <p class="text-slate-600" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
                     </div>
-                @endforeach
+                @empty
+                    @if(!$featured)
+                        <div class="md:col-span-2 lg:col-span-3 bg-white border border-dashed border-sky-200 rounded-2xl p-8 text-center">
+                            <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada pengumuman aktif</p>
+                            <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Admin belum menambahkan pengumuman. Setelah dibuat dari panel admin, informasinya akan otomatis tampil di beranda ini.</p>
+                        </div>
+                    @endif
+                @endforelse
             </div>
         </div>
     </section>
@@ -291,6 +302,52 @@
     </section>
 
     {{-- ── Tentang & Kontak ───────────────────────────────────── --}}
+    <section id="testimoni" class="py-16 bg-gradient-to-b from-white to-sky-50/60">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center gap-2 bg-amber-100 text-amber-700 rounded-full px-4 py-1.5 mb-3" style="font-size:0.8rem;font-weight:600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z"/></svg>
+                    Buku Tamu Publik
+                </div>
+                <h2 class="text-sky-900" style="font-size:1.75rem;font-weight:700">Suara Pengguna TirtaBantu</h2>
+                <p class="text-slate-500 mt-2 max-w-2xl mx-auto" style="font-size:0.9rem">Pengunjung bisa membagikan kesan, saran, atau pengalaman layanan. Semua pesan diverifikasi admin terlebih dahulu sebelum ditampilkan di beranda.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="grid md:grid-cols-2 gap-5">
+                    @forelse($approvedTestimonials as $testimonial)
+                        <article class="bg-white rounded-2xl border border-sky-100 p-6 shadow-sm hover:shadow-md transition-all">
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h3 class="text-sky-900" style="font-size:0.98rem;font-weight:700">{{ $testimonial->nama }}</h3>
+                                    <p class="text-slate-400" style="font-size:0.75rem">{{ optional($testimonial->approved_at)->format('d M Y H:i') }}</p>
+                                </div>
+                                <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center" style="font-size:1.1rem;font-weight:700">
+                                    {{ strtoupper(substr($testimonial->nama, 0, 1)) }}
+                                </div>
+                            </div>
+                            @if($testimonial->rating)
+                                <div class="flex items-center gap-1 mb-2 text-amber-400">
+                                    @for($i=1; $i<=5; $i++)
+                                        <svg class="w-4 h-4 {{ $i <= $testimonial->rating ? 'text-amber-400' : 'text-slate-200' }}" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                        </svg>
+                                    @endfor
+                                </div>
+                            @endif
+                            <p class="text-slate-600" style="font-size:0.88rem;line-height:1.75">{{ $testimonial->pesan }}</p>
+                        </article>
+                    @empty
+                        <div class="md:col-span-2 bg-white rounded-2xl border border-dashed border-sky-200 p-8 text-center">
+                            <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada testimoni yang tayang</p>
+                            <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Testimoni dari pengguna akan ditampilkan di sini setelah dikirimkan dan disetujui admin.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="kontak" class="py-16 bg-white">
         <div class="max-w-6xl mx-auto px-4">
             <div class="grid md:grid-cols-2 gap-8">
@@ -377,6 +434,7 @@
                         <li><a href="#pengumuman" class="hover:text-white transition-colors">Pengumuman</a></li>
                         <li><a href="#fitur"      class="hover:text-white transition-colors">Fitur</a></li>
                         <li><a href="#alur"       class="hover:text-white transition-colors">Alur Pelaporan</a></li>
+                        <li><a href="#testimoni"  class="hover:text-white transition-colors">Testimoni</a></li>
                         <li><a href="#kontak"     class="hover:text-white transition-colors">Kontak</a></li>
                     </ul>
                 </div>

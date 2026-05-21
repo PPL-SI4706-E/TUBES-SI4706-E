@@ -16,3 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.phpunit.result.cache
+/storage/framework/sessions/*
+/Figma Tirtabantu/
+/Salinan dari Template Proposal PPL_V01.pdf

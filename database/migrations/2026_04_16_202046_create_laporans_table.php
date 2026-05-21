@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->string('alamat')->nullable();
             $table->string('foto')->nullable();
-            $table->enum('status', ['pending', 'diterima', 'ditolak', 'dikerjakan', 'selesai'])->default('pending');
+            $table->enum('status', ['pending', 'diterima', 'ditolak', 'dikerjakan', 'menunggu_konfirmasi', 'selesai'])->default('pending');
             $table->timestamp('tanggal_lapor')->nullable();
             $table->text('catatan_admin')->nullable();
             $table->timestamps();
