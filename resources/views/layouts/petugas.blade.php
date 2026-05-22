@@ -42,6 +42,7 @@
 
             @php
                 $navItems = [
+                    ['route' => 'petugas.dashboard', 'label' => 'Dashboard', 'match' => 'petugas.dashboard', 'icon' => 'home'],
                     ['route' => 'petugas.tugas.index', 'label' => 'Daftar Tugas', 'match' => 'petugas.tugas.*', 'icon' => 'clipboard-list'],
                 ];
             @endphp

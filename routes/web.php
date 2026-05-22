@@ -86,7 +86,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::post('/{pembayaran}/verify',    'verify')->name('verify');
     });
 
-    // TODO: FR-14 — Kinerja Petugas (Sprint 2)
+    // FR-14 — Kinerja Petugas (Sprint 2)
     Route::get('/kinerja', [KinerjaController::class, 'index'])->name('kinerja.index');
 
     // TODO: FR-15 — Export Data (Sprint 2)
@@ -137,6 +137,9 @@ Route::prefix('warga')->name('warga.')->middleware(['auth', 'masyarakat'])->grou
 
 // ── Petugas ───────────────────────────────────────────────────────────────────
 Route::prefix('petugas')->name('petugas.')->middleware(['auth', 'petugas'])->group(function () {
+
+    // FR-Dashboard Petugas
+    Route::get('/dashboard', [\App\Http\Controllers\Petugas\DashboardController::class, 'index'])->name('dashboard');
 
     // TODO: FR-09 & FR-10 — Daftar Tugas (Sprint 2)
     Route::prefix('tugas')->name('tugas.')->controller(TugasController::class)->group(function () {

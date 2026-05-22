@@ -154,8 +154,8 @@
             </div>
         </div>
 
-        {{-- Form Konfirmasi (Hanya muncul jika status dikerjakan & penugasan sudah Menunggu Konfirmasi) --}}
-        @if($laporan->status === 'dikerjakan' && optional($laporan->penugasan)->status_tugas === 'Menunggu Konfirmasi')
+        {{-- Form Konfirmasi (Hanya muncul jika status laporan menunggu_konfirmasi) --}}
+        @if($laporan->status === 'menunggu_konfirmasi')
         <div class="bg-white rounded-2xl border border-blue-200 shadow-sm overflow-hidden" x-data="{ rating: 0, hoverRating: 0 }">
             <div class="px-5 py-3.5 bg-blue-600 flex items-center gap-2">
                 <i data-lucide="check-square" class="w-5 h-5 text-white"></i>
@@ -189,12 +189,57 @@
                     <textarea name="komentar" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Bagaimana hasil perbaikannya?"></textarea>
                 </div>
 
-                <button type="submit" class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm text-sm" onclick="return confirm('Apakah Anda yakin ingin menyelesaikan laporan ini?')">
-                    <i data-lucide="check-circle" class="w-4 h-4"></i> Selesaikan Laporan
+                {{-- Tombol Action (Selesai / Revisi) --}}
+                <div class="flex gap-3">
+                    <button type="submit" name="action" value="revisi" class="w-1/3 flex justify-center items-center gap-2 bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold py-3 rounded-xl transition-colors shadow-sm text-sm" onclick="return confirm('Yakin ingin meminta revisi?')">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Revisi
+                    </button>
+                    <button type="submit" name="action" value="selesai" class="w-2/3 flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm text-sm" onclick="return confirm('Apakah Anda yakin ingin menyelesaikan laporan ini?')">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Selesai
+                    </button>
+                </div>
+            </form>
+        </div>
+        @elseif($laporan->status === 'selesai' && !$laporan->ulasan)
+        <div class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden" x-data="{ rating: 0, hoverRating: 0 }">
+            <div class="px-5 py-3.5 bg-amber-500 flex items-center gap-2">
+                <i data-lucide="star" class="w-5 h-5 text-white"></i>
+                <h2 class="text-white font-bold" style="font-size:1.05rem">Beri Ulasan Pelayanan</h2>
+            </div>
+            <form action="{{ route('warga.ulasan.store', $laporan->id) }}" method="POST" class="p-5">
+                @csrf
+                <p class="text-sm text-slate-600 mb-4 text-center">Laporan sudah selesai, tapi Anda belum memberikan ulasan. Yuk, beritahu kami pengalaman Anda!</p>
+
+                {{-- Star Rating --}}
+                <div class="flex justify-center gap-1 mb-4">
+                    <input type="hidden" name="rating" x-model="rating">
+                    <template x-for="star in 5">
+                        <button type="button" class="focus:outline-none transition-transform hover:scale-110"
+                                @click="rating = star"
+                                @mouseenter="hoverRating = star"
+                                @mouseleave="hoverRating = 0">
+                            <span x-text="'★'" style="font-size:2.5rem;line-height:1"
+                                  :class="(hoverRating >= star || (!hoverRating && rating >= star)) ? 'text-amber-400 drop-shadow-sm' : 'text-slate-200'">
+                            </span>
+                        </button>
+                    </template>
+                </div>
+                @error('rating')
+                    <p class="text-red-500 text-center text-xs mb-3">{{ $message }}</p>
+                @enderror
+
+                {{-- Komentar --}}
+                <div class="mb-5">
+                    <label class="block text-slate-500 text-xs font-semibold uppercase mb-1.5">Komentar (Opsional)</label>
+                    <textarea name="komentar" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none" placeholder="Bagaimana pelayanannya?"></textarea>
+                </div>
+
+                <button type="submit" class="w-full flex justify-center items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl transition-colors shadow-sm text-sm">
+                    <i data-lucide="send" class="w-4 h-4"></i> Kirim Ulasan
                 </button>
             </form>
         </div>
-        @elseif($laporan->status === 'dikerjakan' && optional($laporan->penugasan)->status_tugas !== 'Menunggu Konfirmasi')
+        @elseif($laporan->status === 'dikerjakan')
         <div class="bg-blue-50 rounded-2xl border border-blue-100 p-5 text-center">
             <i data-lucide="wrench" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
             <p class="text-blue-800 font-medium text-sm">Laporan Sedang Dikerjakan</p>
