@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
             ['name' => 'Admin Utama',  'email' => 'admin@tirtabantu.id', 'role' => 'admin',      'phone' => '081200000001', 'wilayah_id' => null,          'is_active' => true],
             ['name' => 'Budi Hartono', 'email' => 'budi@tirtabantu.id',  'role' => 'petugas',    'phone' => '081200000002', 'wilayah_id' => $wilayah1?->id, 'is_active' => true],
             ['name' => 'Siti Aminah',  'email' => 'siti@tirtabantu.id',  'role' => 'petugas',    'phone' => '081200000003', 'wilayah_id' => $wilayah2?->id, 'is_active' => true],
+            ['name' => 'Joko Susilo',  'email' => 'joko@tirtabantu.id',  'role' => 'petugas',    'phone' => '081200000007', 'wilayah_id' => $wilayah1?->id, 'is_active' => true],
             ['name' => 'Andi Pratama', 'email' => 'andi@gmail.com',       'role' => 'masyarakat', 'phone' => '081200000004', 'wilayah_id' => $wilayah1?->id, 'is_active' => true],
             ['name' => 'Dewi Lestari', 'email' => 'dewi@gmail.com',       'role' => 'masyarakat', 'phone' => '081200000005', 'wilayah_id' => $wilayah2?->id, 'is_active' => true],
             ['name' => 'Nur Halimah',  'email' => 'nur@gmail.com',        'role' => 'masyarakat', 'phone' => '081200000006', 'wilayah_id' => $wilayah1?->id, 'is_active' => true],

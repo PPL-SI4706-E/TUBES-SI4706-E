@@ -397,17 +397,44 @@
                     </div>
                 </div>
             @elseif($laporan->status === 'selesai')
-                <div class="flex items-start gap-3 bg-emerald-50 p-4 rounded-lg border border-emerald-100 text-emerald-700">
-                    <i data-lucide="monitor-check" class="w-5 h-5 shrink-0 mt-0.5"></i>
-                    <div>
-                        <p class="font-bold text-sm">Selesai (Solusi Virtual)</p>
-                        @if($laporan->catatan_admin)
-                            <div class="mt-2 bg-white/70 p-2.5 rounded-lg border border-emerald-100 text-xs text-emerald-800">
-                                <span class="font-semibold">Solusi:</span> {{ $laporan->catatan_admin }}
+                @if($laporan->penugasan)
+                    <div class="flex items-start gap-3 bg-emerald-50 p-4 rounded-lg border border-emerald-100 text-emerald-700">
+                        <i data-lucide="check-circle" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                        <div class="w-full">
+                            <p class="font-bold text-sm">Selesai (Diselesaikan Petugas)</p>
+                            @php $wo = $laporan->penugasan; @endphp
+                            <div class="mt-3 bg-white rounded-lg border border-emerald-100 p-3 space-y-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm border border-emerald-200 shrink-0">
+                                        {{ strtoupper(substr($wo->petugas->name, 0, 1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800 text-sm">{{ $wo->petugas->name }}</p>
+                                        <p class="text-xs text-slate-500">Penyelesaian: {{ \Carbon\Carbon::parse($wo->penyelesaian->tanggal_selesai ?? now())->format('d M Y') }}</p>
+                                    </div>
+                                </div>
+                                @if($wo->penyelesaian && $wo->penyelesaian->keterangan)
+                                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-xs text-slate-600 mt-2">
+                                        <span class="font-semibold text-slate-700 block mb-0.5">Keterangan Petugas:</span>
+                                        {{ $wo->penyelesaian->keterangan }}
+                                    </div>
+                                @endif
                             </div>
-                        @endif
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="flex items-start gap-3 bg-emerald-50 p-4 rounded-lg border border-emerald-100 text-emerald-700">
+                        <i data-lucide="monitor-check" class="w-5 h-5 shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="font-bold text-sm">Selesai (Solusi Virtual)</p>
+                            @if($laporan->catatan_admin)
+                                <div class="mt-2 bg-white/70 p-2.5 rounded-lg border border-emerald-100 text-xs text-emerald-800">
+                                    <span class="font-semibold">Solusi:</span> {{ $laporan->catatan_admin }}
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @elseif($laporan->status === 'dikerjakan')
                 {{-- Info penugasan: tampilkan siapa petugasnya --}}
                 @php $wo = $laporan->penugasan; @endphp

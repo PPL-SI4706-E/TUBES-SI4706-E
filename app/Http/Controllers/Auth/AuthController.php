@@ -159,7 +159,7 @@ class AuthController extends Controller
     {
         return match (auth()->user()->role) {
             'admin' => redirect()->route('admin.dashboard'),
-            'petugas' => redirect()->route('petugas.tugas.index'),
+            'petugas' => redirect()->route('petugas.dashboard'),
             'masyarakat' => redirect()->route('warga.laporan.index'),
             default => redirect()->route('home'),
         };
