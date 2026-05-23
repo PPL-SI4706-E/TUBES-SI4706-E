@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('penugasan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('laporan_id')->constrained('laporan')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('user')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->date('tanggal_penugasan');
             $table->string('foto_bukti')->nullable();
             $table->enum('status_tugas', ['Ditugaskan', 'Menuju Lokasi', 'Sedang Dikerjakan', 'Menunggu Konfirmasi', 'Selesai'])->default('Ditugaskan');

@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ulasan', function (Blueprint $table) {
+        Schema::create('tagihan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('laporan_id')->constrained('laporan')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->integer('rating');
-            $table->text('komentar')->nullable();
-            $table->date('tanggal_ulasan')->nullable();
+            $table->string('nama');
+            $table->decimal('jumlah', 10, 2);
+            $table->date('tanggal_jatuh_tempo');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ulasan');
+        Schema::dropIfExists('tagihan');
     }
 };

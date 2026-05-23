@@ -74,19 +74,27 @@
                     @forelse($pembayarans as $p)
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="px-6 py-4">
-                            <a href="{{ route('admin.laporan.show', $p->laporan->id) }}" class="flex flex-col group/link">
-                                <span class="text-xs font-bold text-sky-600 mb-0.5">#{{ $p->laporan->id ?? '-' }}</span>
-                                <span class="text-sm font-bold text-slate-700 truncate max-w-[200px] group-hover/link:text-sky-600 transition-colors">{{ $p->laporan->judul ?? 'N/A' }}</span>
-                                <span class="text-[10px] text-slate-400 italic">Dibuat: {{ $p->created_at->format('d/m/Y H:i') }}</span>
-                            </a>
+                            @if($p->laporan)
+                                <a href="{{ route('admin.laporan.show', $p->laporan->id) }}" class="flex flex-col group/link">
+                                    <span class="text-xs font-bold text-sky-600 mb-0.5">#{{ $p->laporan->id }}</span>
+                                    <span class="text-sm font-bold text-slate-700 truncate max-w-[200px] group-hover/link:text-sky-600 transition-colors">{{ $p->laporan->judul ?? 'N/A' }}</span>
+                                    <span class="text-[10px] text-slate-400 italic">Dibuat: {{ $p->created_at->format('d/m/Y H:i') }}</span>
+                                </a>
+                            @else
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-slate-400 mb-0.5"># -</span>
+                                    <span class="text-sm font-bold text-slate-500 truncate max-w-[200px]">Laporan telah dihapus</span>
+                                    <span class="text-[10px] text-slate-400 italic">Dibuat: {{ $p->created_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
-                                    {{ substr($p->user->name ?? '?', 0, 1) }}
+                                    {{ substr($p->user?->name ?? '?', 0, 1) }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-slate-700 leading-none">{{ $p->user->name ?? 'N/A' }}</span>
+                                    <span class="text-sm font-bold text-slate-700 leading-none">{{ $p->user?->name ?? 'Pengguna Dihapus' }}</span>
                                     <span class="text-[10px] text-slate-400">Warga</span>
                                 </div>
                             </div>

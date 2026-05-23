@@ -22,7 +22,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => 'required|email|unique:user',
+            'email'      => 'required|email|unique:users',
             'password'   => ['required', Password::min(6)],
             'role'       => 'required|in:admin,petugas,masyarakat',
             'phone'      => 'nullable|string|max:15',
@@ -46,7 +46,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name'       => 'required|string|max:100',
-            'email'      => 'required|email|unique:user,email,' . $user->id,
+            'email'      => 'required|email|unique:users,email,' . $user->id,
             'role'       => 'required|in:admin,petugas,masyarakat',
             'phone'      => 'nullable|string|max:15',
             'wilayah_id' => 'nullable|exists:wilayah,id',

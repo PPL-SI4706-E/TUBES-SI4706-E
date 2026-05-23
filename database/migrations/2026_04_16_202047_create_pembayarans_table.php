@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('laporan_id')->constrained('laporan')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('user')->cascadeOnDelete();
+            $table->foreignId('laporan_id')->nullable()->constrained('laporan')->nullOnDelete();
+            $table->foreignId('tagihan_id')->nullable();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->decimal('harga', 10, 2);
             $table->string('metode_pembayaran')->nullable();
             $table->string('qr_code_generate')->nullable();
