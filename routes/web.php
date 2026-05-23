@@ -25,6 +25,9 @@ Route::post('/testimoni', [PublicController::class, 'storeTestimoni'])->name('te
 Route::put('/testimoni/{testimoni}', [PublicController::class, 'updateTestimoni'])->name('testimoni.update');
 Route::delete('/testimoni/{testimoni}', [PublicController::class, 'destroyTestimoni'])->name('testimoni.destroy');
 
+// Midtrans Localhost Workaround
+Route::get('/midtrans/finish', [PublicController::class, 'midtransFinish'])->name('midtrans.finish');
+
 // ── Auth — FR-03 | PB3 ────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login',     [AuthController::class, 'showLogin'])->name('login');
@@ -79,7 +82,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::post('/{laporan}/assign',       'assign')->name('assign');
     });
 
-    // TODO: FR-07 — Kelola Pembayaran (Sprint 1)
+    // FR-07 — Kelola Pembayaran (Sprint 1)
     Route::prefix('pembayaran')->name('pembayaran.')->controller(AdminPembayaranController::class)->group(function () {
         Route::get('/',                        'index')->name('index');
         Route::post('/',                       'store')->name('store');
@@ -125,10 +128,11 @@ Route::prefix('warga')->name('warga.')->middleware(['auth', 'masyarakat'])->grou
         Route::post('/{laporan}/konfirmasi', 'konfirmasi')->name('konfirmasi');
     });
 
-    // TODO: FR-07 — Pembayaran (Sprint 1)
+    // FR-07 — Pembayaran (Sprint 1)
     Route::prefix('pembayaran')->name('pembayaran.')->controller(WargaPembayaranController::class)->group(function () {
         Route::get('/',                     'index')->name('index');
         Route::post('/{pembayaran}/upload', 'uploadBukti')->name('upload');
+        Route::get('/{pembayaran}/snap-token', [WargaPembayaranController::class, 'snapToken'])->name('pembayaran.snapToken');
     });
 
     // TODO: FR-12 — Ulasan (Sprint 2)

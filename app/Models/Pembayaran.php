@@ -18,6 +18,7 @@ class Pembayaran extends Model
         'qr_code_generate',
         'bukti_transaksi',
         'status_pembayaran', // Menunggu, Terverifikasi, Lunas, Ditolak, Kadaluarsa
+        'snap_token', // Midtrans Snap token for QRIS payment
     ];
 
     public function laporan()

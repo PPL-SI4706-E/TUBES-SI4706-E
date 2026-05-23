@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('laporan', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('user')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('wilayah_id')->nullable()->constrained('wilayah')->nullOnDelete();
             $table->foreignId('kategori_laporan_id')->nullable()->constrained('kategori_laporan')->nullOnDelete();
             $table->string('judul')->nullable();
