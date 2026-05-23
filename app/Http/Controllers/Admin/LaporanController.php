@@ -108,7 +108,7 @@ class LaporanController extends Controller
     public function assign(Request $request, $id)
     {
         $request->validate([
-            'petugas_id'    => 'required|exists:user,id',
+            'petugas_id'    => 'required|exists:users,id',
             'catatan_admin' => 'nullable|string',
         ], [
             'petugas_id.required' => 'Petugas harus dipilih.',

@@ -117,4 +117,52 @@ class PublicController extends Controller
             ]);
         }
     }
+
+    public function midtransFinish(Request $request)
+    {
+        $isSuccess = false;
+
+        // Localhost Workaround: Proses data dari Midtrans di route publik
+        // Agar terhindar dari masalah Session Cookie drop (SameSite=Lax) saat cross-site redirect
+        if ($request->has('order_id') && preg_match('/^pembayaran-(\d+)(?:-\d+)?$/', $request->order_id, $matches)) {
+            $pembayaranId = $matches[1];
+            if (in_array($request->transaction_status, ['settlement', 'capture'])) {
+                $isSuccess = true;
+                $pembayaran = \App\Models\Pembayaran::find($pembayaranId);
+                
+                if ($pembayaran && $pembayaran->status_pembayaran !== 'Lunas') {
+                    $pembayaran->update([
+                        'status_pembayaran' => 'Lunas',
+                        'metode_pembayaran' => 'Midtrans (Otomatis)'
+                    ]);
+                }
+            }
+        }
+        
+        $pesanLayar = $isSuccess ? 'Pembayaran Berhasil! Memproses data...' : 'Menutup layar pembayaran...';
+
+        // Gunakan JavaScript redirect untuk memutus rantai "Cross-Site Redirect" dari Midtrans
+        // yang menyebabkan browser (Chrome) membuang Session Cookie (ter-logout).
+        $url = route('warga.pembayaran.index');
+        
+        // Simpan flash message ke session secara manual sebelum response
+        if ($isSuccess) {
+            session()->flash('success', 'Pembayaran berhasil dikonfirmasi secara otomatis!');
+        }
+
+        return response("
+            <html>
+            <head><title>Memproses...</title></head>
+            <body style='text-align:center; padding-top:50px; font-family:sans-serif; color: #475569;'>
+                <h3>{$pesanLayar}</h3>
+                <p style='font-size: 12px; color: #94a3b8;'>Mengembalikan Anda ke aplikasi...</p>
+                <script>
+                    setTimeout(function() {
+                        window.location.href = '{$url}';
+                    }, 800);
+                </script>
+            </body>
+            </html>
+        ");
+    }
 }

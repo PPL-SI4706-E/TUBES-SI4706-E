@@ -5,9 +5,9 @@
 @section('content')
     <div x-data="{ 
         openModal: false, 
-        selectedMetode: 'Transfer Bank', 
+        selectedMetode: 'Bayar Online', 
         selectedTagihan: { id: null, harga: 0, laporan_id: null, judul: '' } 
-    }">
+    }" @reopen-modal.window="openModal = true">
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-slate-800">Pembayaran</h1>
             <p class="text-slate-500">Kelola tagihan biaya perbaikan dan layanan air</p>
@@ -79,11 +79,11 @@
                                     <span
                                         class="bg-sky-50 text-sky-600 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest shrink-0">Tagihan
                                         #{{ $tagihan->id }}</span>
-                                    <span class="text-slate-800 font-bold text-base truncate">{{ $tagihan->laporan->judul }}</span>
+                                    <span class="text-slate-800 font-bold text-base truncate">{{ optional($tagihan->laporan)->judul ?? 'Tidak ada laporan' }}</span>
                                 </div>
                                 <p class="text-slate-500 text-xs mb-3 leading-relaxed max-w-2xl truncate">
                                     Biaya perbaikan laporan <b>#{{ $tagihan->laporan->id }}</b> di 
-                                    <span class="text-slate-600 font-semibold">{{ $tagihan->laporan->alamat }}</span>
+                                    <span class="text-slate-600 font-semibold">{{ optional($tagihan->laporan)->alamat ?? '-' }}</span>
                                 </p>
                                 <div class="flex items-center gap-4">
                                     <div class="bg-red-50/50 px-3 py-1.5 rounded-xl border border-red-100 flex items-center gap-2">
@@ -114,8 +114,8 @@
                                             selectedTagihan = { 
                                                 id: {{ $tagihan->id }}, 
                                                 harga: '{{ number_format($tagihan->harga, 0, ',', '.') }}', 
-                                                laporan_id: {{ $tagihan->laporan->id }}, 
-                                                judul: '{{ addslashes($tagihan->laporan->judul) }}' 
+                                                laporan_id: {{ optional($tagihan->laporan)->id ?? 'null' }}, 
+                                                judul: '{{ addslashes(optional($tagihan->laporan)->judul ?? 'Laporan Dihapus') }}' 
                                             }; 
                                             openModal = true
                                         "
@@ -163,13 +163,13 @@
                                 <tr class="hover:bg-slate-50 transition-colors">
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-2">
-                                            <span class="text-sky-600 font-bold">#{{ $item->laporan->id }}</span>
+                                            <span class="text-sky-600 font-bold">#{{ optional($item->laporan)->id ?? '-' }}</span>
                                             <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <p class="text-sm font-medium text-slate-700 leading-tight">Biaya perbaikan</p>
-                                        <p class="text-xs text-slate-400">{{ $item->laporan->judul }}</p>
+                                        <p class="text-xs text-slate-400">{{ optional($item->laporan)->judul ?? '-' }}</p>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="text-sm font-bold text-slate-700">Rp
@@ -241,74 +241,31 @@
                     </div>
 
 
-                    <div class="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 relative overflow-hidden">
-                        <div x-show="selectedMetode === 'Transfer Bank'" x-transition>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tujuan Transfer:
-                            </p>
-                            <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200">
-                                <div>
-                                    <p class="text-xs text-slate-400 font-medium mb-1">Bank BRI</p>
-                                    <p class="text-lg font-mono font-bold text-slate-700 tracking-tighter">1234 5678 9012
-                                        3456</p>
-                                    <p class="text-[10px] text-slate-500 font-bold mt-1 uppercase leading-none">a.n. PDAM
-                                        TirtaBantu</p>
-                                </div>
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/BRI_2020.svg/512px-BRI_2020.svg.png"
-                                    class="h-4 opacity-80" alt="BRI">
-                            </div>
+                    <div x-show="selectedMetode === 'Bayar Online'" x-transition class="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 relative overflow-hidden">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500"></i>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pembayaran Aman via Midtrans</p>
                         </div>
-
-
-                        <div x-show="selectedMetode === 'Tunai di Kantor'" x-transition
-                            class="py-4 text-center">
-                            <div class="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i data-lucide="info" class="w-6 h-6 text-sky-600"></i>
-                            </div>
-                            <p class="text-xs text-slate-500 font-medium leading-relaxed px-6">Silakan lakukan pembayaran
-                                sesuai instruksi metode pilihan Anda, lalu unggah buktinya di bawah.</p>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">Anda bisa membayar menggunakan berbagai metode (QRIS, GoPay, Transfer Bank VA, dll) secara otomatis tanpa perlu upload bukti pembayaran manual.</p>
+                        
+                        <div class="flex gap-2 opacity-70">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logo_QRIS.svg/1200px-Logo_QRIS.svg.png" class="h-5" alt="QRIS">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/1200px-Gopay_logo.svg.png" class="h-5" alt="GoPay">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png" class="h-5" alt="BCA">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Logo_BRI.png/1200px-Logo_BRI.png" class="h-5" alt="BRI">
                         </div>
                     </div>
 
-                    <form :action="'{{ url('warga/pembayaran') }}/' + selectedTagihan.id + '/upload'" method="POST"
+                    <form id="payment-form" :action="'{{ url('warga/pembayaran') }}/' + selectedTagihan.id + (selectedMetode === 'Bayar Online' ? '/snap-token' : '/upload')" method="POST"
                         enctype="multipart/form-data" class="space-y-6">
                         @csrf
 
-                        <div x-show="selectedMetode !== 'Tunai di Kantor'" x-transition>
-                            <div class="flex items-center justify-between mb-3 px-1">
-                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Bukti
-                                    Transfer</label>
-                                <span
-                                    class="text-[9px] text-sky-500 font-bold bg-sky-50 px-2 py-0.5 rounded-full uppercase">WAJIB
-                                    DIISI</span>
+                        <div x-show="selectedMetode === 'Tunai di Kantor'" x-transition class="bg-amber-50 rounded-2xl p-5 border border-amber-100 text-center">
+                            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i data-lucide="info" class="w-6 h-6"></i>
                             </div>
-
-                            <div class="relative group">
-                                <input type="file" name="bukti_transaksi" id="bukti_transaksi"
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                    :required="selectedMetode !== 'Tunai di Kantor'"
-                                    @change="const file = $event.target.files[0]; if(file) { if(!file.type.startsWith('image/')) { alert('Format file tidak didukung, harap unggah gambar (JPG/PNG).'); $event.target.value = ''; return; } if(file.size > 5*1024*1024) { alert('Ukuran file terlalu besar, maksimal 5 MB'); $event.target.value = ''; return; } const reader = new FileReader(); reader.onload = (e) => { $refs.preview.src = e.target.result; $refs.placeholder.classList.add('hidden'); $refs.previewContainer.classList.remove('hidden'); }; reader.readAsDataURL(file); }">
-
-                                <div
-                                    class="border-2 border-dashed border-slate-200 rounded-[2rem] p-6 text-center transition-all duration-300 group-hover:border-sky-400 group-hover:bg-sky-50/30">
-                                    <div x-ref="placeholder" class="py-4">
-                                        <div
-                                            class="w-14 h-14 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                            <i data-lucide="camera" class="w-6 h-6 text-sky-600"></i>
-                                        </div>
-                                        <p class="text-xs font-bold text-slate-700 mb-1">Klik atau seret foto bukti ke sini
-                                        </p>
-                                        <p class="text-[9px] text-slate-400">Pastikan foto jelas (JPG/PNG, Maks. 5MB)</p>
-                                    </div>
-                                    <div x-ref="previewContainer" class="hidden relative inline-block mx-auto">
-                                        <img x-ref="preview" src=""
-                                            class="max-h-40 rounded-2xl shadow-md border-4 border-white">
-                                        <div
-                                            class="absolute -top-2 -right-2 bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-sm">
-                                            <i data-lucide="check" class="w-3.5 h-3.5"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h4 class="font-bold text-amber-800 mb-1">Informasi Pembayaran Tunai</h4>
+                            <p class="text-xs text-amber-700 leading-relaxed">Anda tidak perlu mengunggah bukti pembayaran di sini. Silakan klik tombol di bawah untuk memberitahu sistem bahwa Anda akan membayar secara tunai. Bawa uang pas dan sebutkan <b>ID Tagihan</b> Anda kepada petugas di loket PDAM.</p>
                         </div>
 
 
@@ -318,13 +275,13 @@
                                 Pembayaran:</label>
                             <input type="hidden" name="metode_pembayaran" :value="selectedMetode">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <template x-for="metode in ['Transfer Bank', 'Tunai di Kantor']">
+                                <template x-for="metode in ['Bayar Online', 'Tunai di Kantor']">
                                     <button type="button" @click="selectedMetode = metode"
                                         class="p-4 border-[1.5px] rounded-2xl text-left transition-all duration-200 flex items-center gap-4 relative overflow-hidden"
                                         :class="selectedMetode === metode ? 'border-sky-500 bg-sky-50/50 ring-4 ring-sky-500/5' : 'border-slate-100 hover:border-sky-200 hover:bg-slate-50'">
                                         <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                                             :class="selectedMetode === metode ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-400'">
-                                            <template x-if="metode === 'Transfer Bank'"><i data-lucide="building-2"
+                                            <template x-if="metode === 'Bayar Online'"><i data-lucide="credit-card"
                                                     class="w-4 h-4"></i></template>
                                             <template x-if="metode === 'Tunai di Kantor'"><i data-lucide="building"
                                                     class="w-4 h-4"></i></template>
@@ -342,15 +299,15 @@
                         </div>
 
                         <div class="pt-2">
-                            <button type="submit"
+                            <button type="button" @click.prevent="selectedMetode === 'Bayar Online' ? (openModal = false, payWithMidtrans(selectedTagihan.id)) : document.getElementById('payment-form').submit()"
                                 class="w-full bg-sky-600 hover:bg-sky-700 text-white font-black py-4 rounded-[1.5rem] transition-all shadow-xl shadow-sky-100 flex items-center justify-center gap-2 group">
                                 <span
-                                    x-text="selectedMetode === 'Tunai di Kantor' ? 'Konfirmasi Bayar di Kantor' : 'Kirim Pembayaran'"></span>
+                                    x-text="selectedMetode === 'Tunai di Kantor' ? 'Kirim Bukti Pembayaran' : 'Bayar Sekarang (Midtrans)'"></span>
                                 <i data-lucide="arrow-right"
                                     class="w-4 h-4 text-sky-200 group-hover:translate-x-1 transition-transform"></i>
                             </button>
                             <p class="text-[9px] text-center text-slate-400 mt-4 px-6 uppercase tracking-wider font-bold"
-                                x-text="selectedMetode === 'Tunai di Kantor' ? 'Silakan datangi kantor PDAM terdekat untuk melunasi tagihan ini' : 'Pastikan data yang diunggah sudah benar dan sesuai instruksi'">
+                                x-text="selectedMetode === 'Tunai di Kantor' ? 'Silakan datangi kantor PDAM terdekat untuk melunasi tagihan ini' : 'Anda akan diarahkan ke sistem pembayaran Midtrans yang aman'">
                             </p>
                         </div>
                     </form>
@@ -361,9 +318,51 @@
 @endsection
 
 @section('scripts')
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
     <script>
         document.addEventListener('alpine:initialized', () => {
             lucide.createIcons();
         });
+
+        function payWithMidtrans(pembayaranId) {
+            const url = `{{ url('warga/pembayaran') }}/${pembayaranId}/snap-token`;
+            console.log('Requesting Snap token from', url);
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        console.log('Snap token received', data.token);
+                        snap.pay(data.token, {
+                            onSuccess: function(result) {
+                                // Redirect manual ke route finish kita dengan menyertakan parameter
+                                window.location.href = "{{ route('midtrans.finish') }}?order_id=" + result.order_id + "&transaction_status=" + result.transaction_status;
+                            },
+                            onPending: function(result) {
+                                // Sama seperti success, biarkan backend yang ngecek statusnya
+                                window.location.href = "{{ route('midtrans.finish') }}?order_id=" + result.order_id + "&transaction_status=" + result.transaction_status;
+                            },
+                            onError: function(result) {
+                                alert("Pembayaran gagal!");
+                            },
+                            onClose: function() {
+                                // Re-open the Alpine modal by dispatching a custom event
+                                console.log('User menutup popup Midtrans tanpa menyelesaikan pembayaran');
+                                window.dispatchEvent(new CustomEvent('reopen-modal'));
+                            }
+                        });
+                    } else if (data.error) {
+                        console.error('Snap token error', data.error);
+                        alert(data.error);
+                    } else {
+                        console.error('Unexpected response', data);
+                        alert('Unable to get payment token.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error', err);
+                    alert('Error contacting payment gateway.');
+                });
+        }
     </script>
 @endsection

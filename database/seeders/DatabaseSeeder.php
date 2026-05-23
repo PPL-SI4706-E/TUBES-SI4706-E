@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
             WilayahSeeder::class,
             KategoriSeeder::class,
             UserSeeder::class,
-            LaporanDemoSeeder::class,
+            PembayaranSeeder::class,
         ]);
     }
 }
