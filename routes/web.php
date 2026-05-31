@@ -13,6 +13,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Masyarakat\LaporanController as WargaLaporanController;
 use App\Http\Controllers\Masyarakat\PembayaranController as WargaPembayaranController;
 use App\Http\Controllers\Masyarakat\UlasanController;
+use App\Http\Controllers\NotificationWebController;
+use App\Http\Controllers\Api\NotificationController; // Di-import untuk API routes yang butuh session
 use App\Http\Controllers\Petugas\TugasController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicController;
@@ -36,6 +38,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── PBI-18: Halaman Notifikasi (semua role terautentikasi) ────────────────────
+Route::middleware('auth')->get('/notifikasi', [NotificationWebController::class, 'index'])->name('notifikasi.index');
+
+// ── PBI-18: Notifikasi API (auth session) ─────────────────────────────────────
+// Kita meletakkan route API di web.php agar dapat membaca session auth()->user()
+Route::middleware('auth')->prefix('api/notifications')->name('api.notifications.')->group(function () {
+    Route::get('/',            [NotificationController::class, 'index'])->name('index');       // Read
+    Route::post('/read-all',   [NotificationController::class, 'readAll'])->name('readAll');   // Update Massal
+    Route::delete('/clear-all',[NotificationController::class, 'clearAll'])->name('clearAll'); // Delete Massal
+    Route::patch('/{id}/read', [NotificationController::class, 'markRead'])->name('markRead'); // Update
+    Route::delete('/{id}',     [NotificationController::class, 'destroy'])->name('destroy');   // Delete
+});
 
 // ── Profile (semua role) ──────────────────────────────────────────────────────
 Route::middleware('auth')->prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {

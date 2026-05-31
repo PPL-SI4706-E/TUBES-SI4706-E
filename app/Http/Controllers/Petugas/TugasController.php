@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Laporan;
 use App\Models\Penugasan;
 use App\Models\PenyelesaianTugas;
+use App\Models\User;
+use App\Notifications\TaskProgressNotification;
+use App\Notifications\AdminSystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -91,6 +94,12 @@ class TugasController extends Controller
         $penugasan->status_tugas = $request->status_tugas;
         $penugasan->save();
 
+        // PBI-18: Kirim notifikasi progres ke Warga pembuat laporan
+        $penugasan->load('laporan.user');
+        if ($penugasan->laporan && $penugasan->laporan->user) {
+            $penugasan->laporan->user->notify(new TaskProgressNotification($penugasan, $request->status_tugas));
+        }
+
         return back()->with('success', "Status berhasil diperbarui menjadi \"{$request->status_tugas}\".");
     }
 
@@ -126,6 +135,21 @@ class TugasController extends Controller
         // Update status laporan SPESIFIK berdasarkan laporan_id (bukan update massal)
         Laporan::where('id', $penugasan->laporan_id)
             ->update(['status' => 'menunggu_konfirmasi']);
+
+        // PBI-18: Kirim notifikasi 'selesai/butuh konfirmasi' ke Warga pembuat laporan
+        $penugasan->load('laporan.user');
+        if ($penugasan->laporan && $penugasan->laporan->user) {
+            $penugasan->laporan->user->notify(new TaskProgressNotification($penugasan, 'Selesai (Menunggu Konfirmasi)', true));
+        }
+
+        // PBI-18: Notifikasi ke Admin bahwa Petugas telah menyelesaikan tugas
+        $admins = User::where('role', 'admin')->get();
+        \Illuminate\Support\Facades\Notification::send($admins, new AdminSystemNotification(
+            'Tugas Diselesaikan Petugas',
+            "Petugas " . auth()->user()->name . " telah menyelesaikan laporan #{$penugasan->laporan_id} dan mengunggah bukti.",
+            route('admin.laporan.show', $penugasan->laporan_id),
+            'success'
+        ));
 
         return redirect()
             ->route('petugas.tugas.show', $penugasan->id)

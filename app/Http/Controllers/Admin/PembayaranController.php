@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Models\Pembayaran;
+use App\Notifications\GeneralSystemNotification;
 
 class PembayaranController extends Controller
 {
@@ -34,14 +35,26 @@ class PembayaranController extends Controller
             'status' => 'required|in:Lunas,Ditolak,Menunggu'
         ]);
 
-        $pembayaran = Pembayaran::findOrFail($id);
+        $pembayaran = Pembayaran::with('user')->findOrFail($id);
         $pembayaran->update([
             'status_pembayaran' => $request->status
         ]);
 
+        // PBI-18: Notifikasi ke Warga
+        if ($pembayaran->user) {
+            $notifTitle = $request->status === 'Lunas' ? 'Pembayaran Berhasil' : 'Pembayaran Ditolak';
+            $notifType  = $request->status === 'Lunas' ? 'success' : 'error';
+            $notifMsg   = $request->status === 'Lunas' 
+                          ? "Pembayaran manual Anda sebesar Rp " . number_format($pembayaran->harga, 0, ',', '.') . " untuk Laporan #{$pembayaran->laporan_id} telah disetujui (Lunas)." 
+                          : "Bukti pembayaran manual Anda untuk Laporan #{$pembayaran->laporan_id} ditolak oleh Admin. Silakan unggah ulang.";
 
-
-        $message = $request->status === 'Lunas' ? 'Pembayaran berhasil disetujui!' : 'Pembayaran ditolak!';
+            $pembayaran->user->notify(new GeneralSystemNotification(
+                $notifTitle,
+                $notifMsg,
+                route('warga.pembayaran.index'),
+                $notifType
+            ));
+        }        $message = $request->status === 'Lunas' ? 'Pembayaran berhasil disetujui!' : 'Pembayaran ditolak!';
         return back()->with('success', $message);
     }
 }

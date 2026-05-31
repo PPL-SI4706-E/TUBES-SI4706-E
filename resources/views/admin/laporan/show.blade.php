@@ -55,9 +55,7 @@
                     <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                         <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Deskripsi Laporan
                     </h3>
-                    <div class="bg-slate-50 p-4 rounded-lg text-slate-700 whitespace-pre-wrap text-sm leading-relaxed border border-slate-100">
-                        {{ $laporan->deskripsi }}
-                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg text-slate-700 whitespace-pre-wrap text-sm leading-relaxed border border-slate-100">{{ $laporan->deskripsi }}</div>
                 </div>
 
                 {{-- Lokasi --}}

@@ -9,6 +9,8 @@ use App\Models\Laporan;
 use App\Models\Wilayah;
 use App\Models\Penugasan;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\GeneralSystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -101,6 +103,27 @@ class LaporanController extends Controller
             'ditolak'  => 'Laporan berhasil ditolak.',
         ];
 
+        // PBI-18: Notifikasi ke Warga (Pembuat Laporan) tentang hasil validasi
+        if ($laporan->user) {
+            $notifTitle = $request->status === 'diterima' ? 'Laporan Disetujui' : 
+                         ($request->status === 'ditolak' ? 'Laporan Ditolak' : 'Laporan Diselesaikan');
+            $notifType  = $request->status === 'ditolak' ? 'error' : 'success';
+            $notifMsg   = $request->status === 'diterima' 
+                          ? "Laporan Anda (#{$laporan->id}) telah disetujui dan sedang disiapkan petugasnya." 
+                          : "Laporan Anda (#{$laporan->id}) telah ditolak. Catatan Admin: {$request->catatan_admin}";
+            
+            if ($request->status === 'selesai') {
+                $notifMsg = "Laporan Anda (#{$laporan->id}) diselesaikan oleh sistem. Catatan: {$request->catatan_admin}";
+            }
+
+            $laporan->user->notify(new GeneralSystemNotification(
+                $notifTitle,
+                $notifMsg,
+                route('warga.laporan.show', $laporan->id),
+                $notifType
+            ));
+        }
+
         return redirect()->route('admin.laporan.show', $laporan->id)
             ->with('success', $pesanMap[$request->status]);
     }
@@ -138,8 +161,12 @@ class LaporanController extends Controller
             $penugasan->save();
 
             // Update status laporan
-            $laporan->status = 'dikerjakan'; // Di database enumnya 'dikerjakan' (bukan 'ditugaskan')
+            $laporan->status = 'dikerjakan';
             $laporan->save();
+
+            // PBI-18: Kirim notifikasi ke petugas yang ditugaskan
+            $laporan->load('penugasan');
+            $petugas->notify(new TaskAssignedNotification($laporan, auth()->user()));
         });
 
         return back()->with('success', "Work Order untuk Laporan #{$laporan->id} berhasil dibuat dan ditugaskan ke {$petugas->name}.");

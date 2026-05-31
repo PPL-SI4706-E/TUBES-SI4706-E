@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
+use App\Models\User;
+use App\Notifications\GeneralSystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -35,6 +37,15 @@ class PengumumanController extends Controller
             'user_id' => $request->user()->id,
             'is_penting' => $request->boolean('is_penting'),
         ]);
+
+        // PBI-18: Notifikasi Pengumuman Baru ke Warga & Petugas
+        $users = User::whereIn('role', ['masyarakat', 'petugas'])->get();
+        \Illuminate\Support\Facades\Notification::send($users, new GeneralSystemNotification(
+            'Pengumuman Baru',
+            "Admin telah memposting pengumuman baru: {$request->judul}",
+            route('home'), // Arahkan ke beranda untuk melihat pengumuman
+            $request->boolean('is_penting') ? 'error' : 'info' // Error color for urgent
+        ));
 
         return redirect()->route('admin.pengumuman.index')->with('success', 'Pengumuman berhasil dibuat.');
     }

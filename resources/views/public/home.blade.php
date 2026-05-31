@@ -58,7 +58,7 @@
 <div class="min-h-screen bg-gradient-to-b from-sky-50 to-white">
 
     {{-- ── Navbar ──────────────────────────────────────────────── --}}
-    <header class="bg-white/80 backdrop-blur sticky top-0 z-20 border-b border-sky-100">
+    <header class="bg-white/80 backdrop-blur sticky top-0 z-50 border-b border-sky-100" x-data="{ mobileMenuOpen: false }">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center">
@@ -66,7 +66,7 @@
                 </div>
                 <span class="text-sky-800" style="font-size:1.2rem;font-weight:700">TirtaBantu</span>
             </div>
-            <nav class="hidden md:flex items-center gap-6" style="font-size:0.875rem">
+            <nav class="hidden lg:flex items-center gap-6" style="font-size:0.875rem">
                 <a href="#pengumuman" class="text-sky-700 hover:text-sky-900 transition-colors">Pengumuman</a>
                 <a href="#tarif"      class="text-sky-700 hover:text-sky-900 transition-colors">Tarif Layanan</a>
                 <a href="#fitur"      class="text-sky-700 hover:text-sky-900 transition-colors">Fitur</a>
@@ -89,8 +89,41 @@
                     </form>
                 </div>
             @else
-                <a href="{{ route('login') }}" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
+                <a href="{{ route('login') }}" class="hidden lg:inline-block bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg transition-colors shadow-sm" style="font-size:0.875rem">Masuk</a>
             @endauth
+
+            {{-- Hamburger Button (Tablet & Mobile) --}}
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-sky-800 p-2 rounded-lg hover:bg-sky-50 focus:outline-none focus:ring-2 focus:ring-sky-200">
+                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg x-show="mobileMenuOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        {{-- Mobile/Tablet Menu Panel --}}
+        <div x-show="mobileMenuOpen" x-collapse x-cloak class="lg:hidden border-t border-sky-100 bg-white">
+            <nav class="flex flex-col px-4 py-3 space-y-3 font-medium text-sky-800">
+                <a href="#pengumuman" @click="mobileMenuOpen = false" class="hover:text-sky-600">Pengumuman</a>
+                <a href="#tarif" @click="mobileMenuOpen = false" class="hover:text-sky-600">Tarif Layanan</a>
+                <a href="#fitur" @click="mobileMenuOpen = false" class="hover:text-sky-600">Fitur</a>
+                <a href="#alur" @click="mobileMenuOpen = false" class="hover:text-sky-600">Alur Pelaporan</a>
+                <a href="#testimoni" @click="mobileMenuOpen = false" class="hover:text-sky-600">Testimoni</a>
+                <a href="#kontak" @click="mobileMenuOpen = false" class="hover:text-sky-600">Kontak</a>
+                <hr class="border-sky-100">
+                @auth
+                    @php
+                        $loggedUrl = auth()->user()->isAdmin() ? route('admin.dashboard') : (auth()->user()->isPetugas() ? route('petugas.tugas.index') : route('warga.laporan.index'));
+                        $loggedLabel = auth()->user()->isAdmin() ? 'Dashboard' : (auth()->user()->isPetugas() ? 'Tugas Saya' : 'Laporan Saya');
+                    @endphp
+                    <a href="{{ $loggedUrl }}" class="bg-sky-600 text-white text-center px-5 py-2.5 rounded-lg shadow-sm">{{ $loggedLabel }}</a>
+                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                        @csrf
+                        <button type="submit" class="w-full bg-rose-50 text-rose-600 text-center px-5 py-2.5 rounded-lg border border-rose-200">Logout</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="bg-sky-600 text-white text-center px-5 py-2.5 rounded-lg shadow-sm">Masuk Sistem</a>
+                    <a href="{{ route('register') }}" class="bg-sky-50 text-sky-700 text-center px-5 py-2.5 rounded-lg border border-sky-200">Daftar Akun</a>
+                @endauth
+            </nav>
         </div>
     </header>
 

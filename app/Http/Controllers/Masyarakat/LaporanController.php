@@ -8,6 +8,11 @@ use App\Models\Laporan;
 use App\Models\MapLokasi;
 use App\Models\KategoriLaporan;
 use App\Models\Wilayah;
+use App\Models\User;
+use App\Notifications\TaskConfirmedNotification;
+use App\Notifications\NewReportNotification;
+use App\Notifications\AdminSystemNotification;
+use App\Notifications\GeneralSystemNotification;
 use Illuminate\Support\Facades\Storage;
 
 class LaporanController extends Controller
@@ -95,6 +100,10 @@ class LaporanController extends Controller
             'status_pembayaran' => $tarif <= 0 ? 'Lunas' : 'Menunggu',
         ]);
 
+        // PBI-18: Kirim notifikasi laporan baru ke semua Admin
+        $admins = User::where('role', 'admin')->get();
+        \Illuminate\Support\Facades\Notification::send($admins, new NewReportNotification($laporan));
+
         return redirect()->route('warga.laporan.index')->with('success', 'Laporan berhasil dibuat! Silakan cek menu Pembayaran untuk melunasi tagihan.');
     }
 
@@ -145,6 +154,11 @@ class LaporanController extends Controller
                     'status_tugas' => 'Sedang Dikerjakan',
                     'catatan_admin' => trim($catatanBaru),
                 ]);
+
+                // PBI-18: Kirim notif revisi ke Petugas
+                if ($laporan->penugasan->petugas) {
+                    $laporan->penugasan->petugas->notify(new TaskConfirmedNotification($laporan, true));
+                }
             }
 
             return back()->with('success', 'Permintaan revisi telah dikirim ke petugas. Laporan kembali ke status Sedang Dikerjakan.');
@@ -167,6 +181,27 @@ class LaporanController extends Controller
             'tanggal_ulasan' => now()->toDateString(),
         ]);
 
+        // PBI-18: Notifikasi Ulasan Buruk ke Admin
+        if ($r->rating <= 2) {
+            $admins = User::where('role', 'admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new AdminSystemNotification(
+                'Ulasan Buruk Diterima',
+                "Laporan #{$laporan->id} mendapat rating {$r->rating} bintang. Mohon periksa kinerja petugas terkait.",
+                route('admin.laporan.show', $laporan->id),
+                'error'
+            ));
+        }
+
+        // PBI-18: Notifikasi Apresiasi ke Petugas (Rating 4-5)
+        if ($r->rating >= 4 && $laporan->penugasan && $laporan->penugasan->petugas) {
+            $laporan->penugasan->petugas->notify(new GeneralSystemNotification(
+                'Kerja Bagus!',
+                "Anda mendapat rating {$r->rating} Bintang untuk Laporan #{$laporan->id} dari Warga.",
+                route('petugas.tugas.show', $laporan->penugasan->id),
+                'success'
+            ));
+        }
+
         // Update status Laporan → selesai (spesifik berdasarkan ID)
         Laporan::where('id', $laporan->id)
             ->update(['status' => 'selesai']);
@@ -174,6 +209,11 @@ class LaporanController extends Controller
         // Update status Penugasan → Selesai
         if ($laporan->penugasan) {
             $laporan->penugasan->update(['status_tugas' => 'Selesai']);
+
+            // PBI-18: Kirim notif konfirmasi ke Petugas
+            if ($laporan->penugasan->petugas) {
+                $laporan->penugasan->petugas->notify(new TaskConfirmedNotification($laporan, false));
+            }
         }
 
         return back()->with('success', 'Terima kasih! Konfirmasi dan ulasan Anda telah tersimpan. Laporan dinyatakan selesai.');

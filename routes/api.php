@@ -3,8 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MidtransWebhookController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle']);
+
+// Notification API routes moved to web.php to support session authentication
 /*
 |--------------------------------------------------------------------------
 | API Routes

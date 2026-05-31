@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Pengumuman;
 use App\Models\TestimoniPublik;
+use App\Models\User;
+use App\Notifications\PaymentReceivedNotification;
+use App\Notifications\AdminSystemNotification;
+use App\Notifications\GeneralSystemNotification;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -70,6 +74,15 @@ class PublicController extends Controller
             'editable_until' => now()->addMinutes(5),
         ]);
 
+        // PBI-18: Notifikasi Testimoni Baru ke Admin
+        $admins = User::where('role', 'admin')->get();
+        \Illuminate\Support\Facades\Notification::send($admins, new AdminSystemNotification(
+            'Testimoni Baru',
+            "Terdapat testimoni baru dari {$testimoni->nama} yang menunggu persetujuan.",
+            route('admin.testimoni.index'),
+            'info'
+        ));
+
         $request->session()->put('public_testimoni_token', $sessionToken);
         $request->session()->flash('success', 'Testimoni Anda berhasil dikirim dan sedang menunggu persetujuan admin.');
         $request->session()->flash('testimoni_id', $testimoni->id);
@@ -135,6 +148,20 @@ class PublicController extends Controller
                         'status_pembayaran' => 'Lunas',
                         'metode_pembayaran' => 'Midtrans (Otomatis)'
                     ]);
+
+                    // PBI-18: Notifikasi Admin pembayaran lunas (Localhost Workaround)
+                    $admins = User::where('role', 'admin')->get();
+                    \Illuminate\Support\Facades\Notification::send($admins, new PaymentReceivedNotification($pembayaran));
+
+                    // PBI-18: Notifikasi ke Warga
+                    if ($pembayaran->user) {
+                        $pembayaran->user->notify(new GeneralSystemNotification(
+                            'Pembayaran Berhasil',
+                            "Pembayaran Anda sebesar Rp " . number_format($pembayaran->harga, 0, ',', '.') . " untuk Laporan #{$pembayaran->laporan_id} telah lunas.",
+                            route('warga.pembayaran.index'),
+                            'success'
+                        ));
+                    }
                 }
             }
         }

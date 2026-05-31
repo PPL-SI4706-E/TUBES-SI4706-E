@@ -8,11 +8,19 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     * Skema standar Laravel Database Notifications (PBI-18).
      */
     public function up(): void
     {
-        Schema::create('notification', function (Blueprint $table) {
-            $table->id();
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('notification');
+
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');   // notifiable_id + notifiable_type
+            $table->text('data');           // JSON payload (title, message, icon, link)
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
@@ -22,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notification');
+        Schema::dropIfExists('notifications');
     }
 };

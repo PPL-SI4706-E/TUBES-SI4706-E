@@ -13,6 +13,7 @@
         "midtrans/midtrans-php": "^2.6"
     },
     "require-dev": {
+        "doctrine/dbal": "^3.10",
         "fakerphp/faker": "^1.9.1",
         "laravel/dusk": "^8.6",
         "laravel/pint": "^1.0",
