@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\ReportExportController;
 use App\Http\Controllers\Admin\KinerjaController;
 use App\Http\Controllers\Admin\LaporanController as AdminLaporanController;
 use App\Http\Controllers\Admin\MasterKategoriController;
@@ -107,10 +108,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     // FR-14 — Kinerja Petugas (Sprint 2)
     Route::get('/kinerja', [KinerjaController::class, 'index'])->name('kinerja.index');
 
-    // TODO: FR-15 — Export Data (Sprint 2)
+    // FR-15 — Export Data (Sprint 2) — PBI 15
     Route::prefix('export')->name('export.')->controller(ExportController::class)->group(function () {
-        Route::get('/laporan', 'laporan')->name('laporan');
         Route::get('/kinerja', 'kinerja')->name('kinerja');
+    });
+
+    // PBI-15 — Export Laporan PDF & Excel (filter-aware)
+    Route::prefix('laporan/export')->name('laporan.export.')->controller(ReportExportController::class)->group(function () {
+        Route::get('/pdf',   'exportPdf'  )->name('pdf');
+        Route::get('/excel', 'exportExcel')->name('excel');
     });
 
     // TODO: FR-16 — Pengumuman (Sprint 1)

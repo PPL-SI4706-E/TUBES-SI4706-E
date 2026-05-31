@@ -9,18 +9,53 @@
         || request()->filled('bulan_akhir')
         || request()->filled('wilayah_id')
         || request()->filled('kategori_id');
+
+    // Build export URL with active filters
+    $exportParams = array_filter([
+        'keyword'      => request('keyword'),
+        'status_bayar' => request('status_bayar'),
+        'bulan_awal'   => request('bulan_awal'),
+        'bulan_akhir'  => request('bulan_akhir'),
+        'wilayah_id'   => request('wilayah_id'),
+        'kategori_id'  => request('kategori_id'),
+    ]);
+
+    $exportExcelUrl = route('admin.laporan.export.excel', $exportParams);
+    $exportPdfUrl   = route('admin.laporan.export.pdf',   $exportParams);
 @endphp
+
+{{-- Flash error untuk export kosong --}}
+@if(session('error'))
+    <div class="mb-4 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 shadow-sm">
+        <i data-lucide="alert-circle" class="h-4 w-4 shrink-0"></i>
+        {{ session('error') }}
+    </div>
+@endif
 
 <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
         <h1 class="text-2xl font-bold text-sky-900">Kelola Laporan</h1>
-        <p class="mt-1 text-sm text-slate-500">Daftar laporan dari masyarakat untuk divalidasi dan dipantau.</p>
+        <p class="mt-1 text-sm text-slate-500">Validasi, tinjau kebutuhan turun lapangan, dan kelola seluruh laporan</p>
     </div>
-    <a href="{{ route('admin.laporan.peta') }}"
-       class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-sky-700">
-        <i data-lucide="map" class="h-4 w-4"></i>
-        Lihat Peta
-    </a>
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ $exportExcelUrl }}"
+           id="btn-export-excel"
+           class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700">
+            <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+            Export Excel
+        </a>
+        <a href="{{ $exportPdfUrl }}"
+           id="btn-export-pdf"
+           class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700">
+            <i data-lucide="file-text" class="h-4 w-4"></i>
+            Export PDF
+        </a>
+        <a href="{{ route('admin.laporan.peta') }}"
+           class="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-sky-700">
+            <i data-lucide="map" class="h-4 w-4"></i>
+            Lihat Peta
+        </a>
+    </div>
 </div>
 
 @include('admin.laporan._filter')
