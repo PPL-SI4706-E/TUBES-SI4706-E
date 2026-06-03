@@ -18,47 +18,34 @@
      x-init="fetchNotifications()"
      id="notifikasi-page">
 
-    {{-- ── Header Section ─────────────────────────────────────────────────── --}}
-    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-8 sm:p-10 mb-8 shadow-xl shadow-sky-900/20">
-        {{-- Decorative background elements --}}
-        <div class="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/4 w-80 h-80 bg-sky-400/20 rounded-full blur-3xl"></div>
-        
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-5">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-inner">
-                    <i data-lucide="bell-ring" class="w-8 h-8 text-white drop-shadow-md"></i>
-                </div>
-                <div>
-                    <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-1">Notifikasi Sistem</h1>
-                    <p class="text-sky-100 font-medium text-sm sm:text-base opacity-90">Pusat informasi dan pembaruan aktivitas Anda.</p>
-                </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        {{-- ── Header Section ─────────────────────────────────────────────────── --}}
+        <div class="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-xl font-bold text-slate-900">Notifikasi Sistem</h1>
+                <p class="text-slate-500 text-sm mt-1">Pusat informasi dan pembaruan aktivitas Anda.</p>
             </div>
-
-            <div class="flex items-center gap-3 bg-white/10 p-1.5 rounded-2xl backdrop-blur-md border border-white/20">
+            <div class="flex items-center gap-3">
                 <button
                     @click="markAllAsRead()"
                     :disabled="unreadCount === 0 || loading"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm
-                           disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white hover:text-sky-700 text-white">
-                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 font-medium text-sm
+                           disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-sky-500"></i>
                     <span class="hidden sm:inline">Tandai Dibaca</span>
                 </button>
-                <div class="w-px h-8 bg-white/20"></div>
                 <button
                     @click="clearAll()"
                     :disabled="notifications.length === 0 || loading"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm
-                           disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-500 hover:text-white text-white/90">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 font-medium text-sm
+                           disabled:opacity-50 disabled:cursor-not-allowed bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
                     <span class="hidden sm:inline">Bersihkan</span>
                 </button>
             </div>
         </div>
-    </div>
 
-    {{-- ── Main Panel ─────────────────────────────────────────────────────── --}}
-    <div class="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-sm border border-slate-200/60 overflow-hidden">
+        {{-- ── Main Panel ─────────────────────────────────────────────────────── --}}
 
         {{-- Filter & Search Toolbar --}}
         <div class="p-4 sm:p-6 sm:pb-5 border-b border-slate-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-5 bg-white/50">
@@ -113,18 +100,17 @@
             {{-- Empty State --}}
             <div x-show="!loading && notifications.length === 0"
                  class="absolute inset-0 flex flex-col items-center justify-center text-center p-8" x-transition>
-                <div class="w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner border border-slate-100">
-                    <i data-lucide="bell-off" class="w-10 h-10 text-slate-300"></i>
+                <div class="mb-3">
+                    <i data-lucide="inbox" class="w-10 h-10 text-slate-300 mx-auto"></i>
                 </div>
-                <h3 class="text-xl font-bold text-slate-700 mb-2">Halaman Kosong</h3>
-                <p class="text-slate-500 text-sm max-w-sm font-medium leading-relaxed" x-text="emptyStateMessage"></p>
+                <p class="text-slate-500 text-sm font-medium" x-text="emptyStateMessage"></p>
             </div>
 
             {{-- Notification Items --}}
-            <div class="divide-y divide-slate-100/80 p-2 sm:p-4 space-y-2">
+            <div class="p-4 sm:p-6 space-y-3 bg-slate-50/50">
                 <template x-for="notif in notifications" :key="notif.id">
                     <div
-                        :class="!notif.read ? 'bg-sky-50/50 hover:bg-sky-50 border-sky-100 shadow-sm' : 'bg-white hover:bg-slate-50 border-transparent hover:border-slate-200'"
+                        :class="!notif.read ? 'bg-sky-50 border-sky-200 shadow hover:shadow-md hover:border-sky-300 hover:bg-sky-100' : 'bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 hover:bg-slate-50'"
                         class="relative p-4 sm:p-5 rounded-2xl transition-all duration-300 flex gap-4 group border"
                         x-show="!loading"
                         x-transition:enter="transition ease-out duration-300"
