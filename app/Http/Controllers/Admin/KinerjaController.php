@@ -38,7 +38,7 @@ class KinerjaController extends Controller
             ->values();
 
         $sortBy = $request->get('sort_by', 'name');
-        $sortDir = $request->get('sort_dir', 'asc');
+        $sortDir = $request->get('sort_dir', 'desc');
 
         $validSortFields = ['name', 'tugas_selesai_count', 'rata_rata_rating'];
         if (!in_array($sortBy, $validSortFields)) {

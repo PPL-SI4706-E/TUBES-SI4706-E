@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-white flex items-center justify-center p-4">
-    <div class="w-full max-w-md" x-data="{ selectedRole: '{{ old('role', 'masyarakat') }}' }">
+    <div class="w-full max-w-md" x-data="{ selectedRole: '' }">
 
         <div class="text-center mb-8">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-2 group">
@@ -21,7 +21,7 @@
             <div class="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -z-0 opacity-50"></div>
             
             <div class="relative z-10">
-                <h2 class="text-sky-900 mb-1 text-center" style="font-size:1.5rem;font-weight:800">Selamat Datang</h2>
+                <h2 class="text-sky-800 mb-1 text-center" style="font-size:1.5rem;font-weight:800">Masuk ke Sistem</h2>
                 <p class="text-slate-500 text-center mb-8" style="font-size:0.85rem">Pilih jenis akun dan masukkan detail login Anda</p>
 
                 @if(session('success'))
@@ -85,7 +85,7 @@
                                 <label class="cursor-pointer">
                                     <input type="radio" name="role" value="{{ $r['val'] }}"
                                            x-model="selectedRole"
-                                           class="peer sr-only" required>
+                                           class="peer sr-only">
                                     <div class="border-2 rounded-2xl p-3 text-center transition-all duration-300 transform peer-checked:scale-105
                                                 peer-checked:border-{{ $r['color'] }}-500
                                                 peer-checked:bg-{{ $r['color'] }}-50
@@ -150,7 +150,7 @@
                     </div>
 
                     <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white py-4 rounded-2xl transition-all shadow-xl shadow-sky-100 hover:shadow-sky-200 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2" style="font-size:1rem;font-weight:700">
-                        <span>Masuk Sekarang</span>
+                        <span>Masuk</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
                 </form>
