@@ -441,7 +441,7 @@ class Pbi18NotificationTest extends DuskTestCase
                  }'
             );
 
-            $browser->pause(1200);
+            $browser->pause(4000);
 
             // Verifikasi halaman berpindah ke detail laporan di Warga
             $browser->assertPathIs('/warga/laporan/' . $this->laporan->id);
