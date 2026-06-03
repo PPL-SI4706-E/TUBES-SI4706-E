@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-sky-100 via-sky-50 to-white flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
+    <div class="w-full max-w-md" x-data="{ selectedRole: '{{ old('role', 'masyarakat') }}' }">
 
         <div class="text-center mb-8">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-2 group">
@@ -16,7 +16,7 @@
             </a>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-2xl p-8 border border-sky-100 relative overflow-hidden" x-data="{ selectedRole: '{{ old('role', 'masyarakat') }}' }">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 border border-sky-100 relative overflow-hidden">
             {{-- Decorative elements --}}
             <div class="absolute top-0 right-0 w-32 h-32 bg-sky-50 rounded-bl-full -z-0 opacity-50"></div>
             
@@ -42,7 +42,30 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                <form method="POST" action="{{ route('login') }}" class="space-y-6"
+                      x-data="{ 
+                          savedEmail: localStorage.getItem('tb_email') || '',
+                          savedPassword: localStorage.getItem('tb_password') || '',
+                          rememberMe: localStorage.getItem('tb_remember') === 'true'
+                      }"
+                      x-init="
+                          setTimeout(() => {
+                              if (savedEmail) $refs.email.value = savedEmail;
+                              if (savedPassword) $refs.password.value = savedPassword;
+                              if (rememberMe) $refs.remember.checked = true;
+                          }, 50);
+                      "
+                      @submit="
+                          if ($refs.remember.checked) {
+                              localStorage.setItem('tb_email', $refs.email.value);
+                              localStorage.setItem('tb_password', $refs.password.value);
+                              localStorage.setItem('tb_remember', 'true');
+                          } else {
+                              localStorage.removeItem('tb_email');
+                              localStorage.removeItem('tb_password');
+                              localStorage.setItem('tb_remember', 'false');
+                          }
+                      ">
                     @csrf
 
                     {{-- ── PILIH ROLE ────────────────────────────────────── --}}
@@ -90,8 +113,9 @@
                             <div class="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-sky-600 text-slate-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             </div>
-                            <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                                   placeholder="Masukkan email terdaftar"
+                            <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus
+                                   x-ref="email"
+                                   placeholder="Masukkan email terdaftar" autocomplete="username"
                                    class="w-full pl-12 pr-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50/30 focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all"
                                    style="font-size:0.9rem">
                         </div>
@@ -106,8 +130,9 @@
                             <div class="absolute left-4 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-sky-600 text-slate-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                             </div>
-                            <input :type="show ? 'text' : 'password'" name="password" required
-                                   placeholder="••••••••"
+                            <input type="password" :type="show ? 'text' : 'password'" name="password" id="password" required
+                                   x-ref="password"
+                                   placeholder="••••••••" autocomplete="current-password"
                                    class="w-full pl-12 pr-12 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50/30 focus:outline-none focus:ring-4 focus:ring-sky-100 focus:border-sky-500 transition-all"
                                    style="font-size:0.9rem">
                             <button type="button" @click="show = !show" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-600 transition-colors">
@@ -119,7 +144,7 @@
 
                     <div class="flex items-center justify-between px-1">
                         <label class="flex items-center gap-2 cursor-pointer group">
-                            <input type="checkbox" name="remember" id="remember" class="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 transition-all">
+                            <input type="checkbox" name="remember" id="remember" value="1" x-ref="remember" class="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 transition-all">
                             <span class="text-slate-600 group-hover:text-sky-800 transition-colors" style="font-size:0.85rem">Ingat saya</span>
                         </label>
                     </div>

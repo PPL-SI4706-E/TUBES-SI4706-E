@@ -248,11 +248,11 @@
                         </div>
                         <p class="text-xs text-slate-500 leading-relaxed mb-4">Anda bisa membayar menggunakan berbagai metode (QRIS, GoPay, Transfer Bank VA, dll) secara otomatis tanpa perlu upload bukti pembayaran manual.</p>
                         
-                        <div class="flex gap-2 opacity-70">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logo_QRIS.svg/1200px-Logo_QRIS.svg.png" class="h-5" alt="QRIS">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/1200px-Gopay_logo.svg.png" class="h-5" alt="GoPay">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png" class="h-5" alt="BCA">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Logo_BRI.png/1200px-Logo_BRI.png" class="h-5" alt="BRI">
+                        <div class="flex gap-3 opacity-80 mt-2">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="h-6 object-contain" alt="QRIS">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" class="h-6 object-contain" alt="GoPay">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="h-6 object-contain" alt="BCA">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Logo_BRI.png" class="h-6 object-contain" alt="BRI">
                         </div>
                     </div>
 
