@@ -35,7 +35,7 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
-            'role' => ['required', Rule::in(self::LOGIN_ROLES)],
+            'role' => ['sometimes', 'nullable', Rule::in(self::LOGIN_ROLES)],
         ], [
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
@@ -44,15 +44,25 @@ class AuthController extends Controller
             'role.in' => 'Jenis akun tidak valid.',
         ]);
 
-        $selectedRole = $credentials['role'];
-
+        $selectedRole = $credentials['role'] ?? null;
         // Cari user berdasarkan email — untuk validasi role match.
         // Kalau admin coba pilih role "Masyarakat" → ditolak (begitu sebaliknya).
         // Pesan error sengaja generik agar tidak membocorkan apakah email
         // tersebut terdaftar atau tidak.
         $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user || $user->role !== $selectedRole) {
+        if (!$user) {
+            return back()
+                ->withErrors([
+                    'email' => 'Email, password, atau jenis akun tidak sesuai.',
+                ])
+                ->withInput($request->except('password'));
+        }
+        // If role not provided, use user's role
+        if ($selectedRole === null) {
+            $selectedRole = $user->role;
+        }
+        if ($user->role !== $selectedRole) {
             return back()
                 ->withErrors([
                     'email' => 'Email, password, atau jenis akun tidak sesuai.',
@@ -71,7 +81,6 @@ class AuthController extends Controller
         $attempt = [
             'email' => $credentials['email'],
             'password' => $credentials['password'],
-            'role' => $selectedRole,
         ];
 
         if (!Auth::attempt($attempt, $request->boolean('remember'))) {

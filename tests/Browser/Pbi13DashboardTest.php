@@ -15,12 +15,15 @@ class Pbi13DashboardTest extends DuskTestCase
             
             // Login sebagai admin
             $browser->visit('/login')
-                    ->assertSee('Selamat Datang')
-                    // Klik div pembungkus yang mendampingi input radio admin karena input aslinya disembunyikan (sr-only)
-                    ->click('input[value="admin"] + div')
-                    ->type('email', 'admin@tirtabantu.id')
-                    ->type('password', 'password')
-                    ->press('Masuk Sekarang')
+                    ->assertSee('Masuk ke Sistem');
+
+            // Pilih role admin (radio tersembunyi)
+            $browser->script("let r=document.querySelector('input[name=\"role\"][value=\"admin\"]'); r.checked=true; r.dispatchEvent(new Event('change',{bubbles:true}));");
+
+            // Isi email, password, dan kirim
+            $browser->type('#email', 'admin@tirtabantu.id')
+                    ->type('#password', 'password')
+                    ->press('Masuk')
                     ->assertPathIs('/admin/dashboard')
                     ->assertSee('Dashboard Admin');
             
@@ -28,7 +31,7 @@ class Pbi13DashboardTest extends DuskTestCase
             $browser->assertSee('Ringkasan sistem pelaporan dan distribusi air bersih');
             
             // Periksa apakah menampilkan data kosong (empty state) atau data statistik
-            $bodyText = $browser->text('body');
+            $bodyText = $browser->script("return document.body.innerText;")[0];
             if (str_contains($bodyText, 'Data statistik tidak tersedia')) {
                 $browser->assertSee('Belum ada laporan yang masuk ke dalam sistem untuk dianalisis.');
             } else {
