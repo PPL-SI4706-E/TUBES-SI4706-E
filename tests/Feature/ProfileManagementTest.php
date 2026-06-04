@@ -80,7 +80,7 @@ class ProfileManagementTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('success');
 
-        $this->assertDatabaseHas('user', [
+        $this->assertDatabaseHas('users', [
             'id'    => $user->id,
             'name'  => 'Nama Baru',
             'email' => 'emailbaru@example.com',

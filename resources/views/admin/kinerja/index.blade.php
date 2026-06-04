@@ -19,7 +19,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($petugasList as $petugas)
+        @forelse ($petugasList as $petugas)
             <tr class="border-t">
                 <td class="px-4 py-2">{{ $petugas->name }}</td>
                 <td class="px-4 py-2">{{ $petugas->tugas_selesai_count ?? 0 }}</td>
@@ -27,7 +27,11 @@
                     {{ number_format($petugas->rata_rata_rating ?? $petugas->average_rating ?? 0, 1) }}
                 </td>
             </tr>
-        @endforeach
+        @empty
+            <tr>
+                <td colspan="3" class="px-4 py-2 text-center text-gray-500">Belum ada data kinerja petugas</td>
+            </tr>
+        @endforelse
     </tbody>
 </table>
 @endsection
