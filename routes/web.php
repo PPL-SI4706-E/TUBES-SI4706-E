@@ -110,7 +110,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     // FR-15 — Export Data (Sprint 2) — PBI 15
     Route::prefix('export')->name('export.')->controller(ExportController::class)->group(function () {
-        Route::get('/kinerja', 'kinerja')->name('kinerja');
+        Route::get('/kinerja/pdf',   'kinerjaPdf'  )->name('kinerja.pdf');
+        Route::get('/kinerja/excel', 'kinerjaExcel')->name('kinerja.excel');
+    });
+
+    // PBI-15 — Export Pembayaran PDF & Excel
+    Route::prefix('pembayaran/export')->name('pembayaran.export.')->controller(PaymentExportController::class)->group(function () {
+        Route::get('/pdf',   'exportPdf'  )->name('pdf');
+        Route::get('/excel', 'exportExcel')->name('excel');
     });
 
     // PBI-15 — Export Laporan PDF & Excel (filter-aware)

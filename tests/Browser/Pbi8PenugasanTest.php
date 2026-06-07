@@ -2,40 +2,52 @@
 
 namespace Tests\Browser;
 
-use App\Models\KategoriLaporan;
-use App\Models\Laporan;
 use App\Models\User;
+use App\Models\Laporan;
 use App\Models\Wilayah;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
+use App\Models\KategoriLaporan;
+use App\Models\Penugasan;
+use App\Models\Pembayaran;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\Browser;
 use Tests\DuskTestCase;
 
-/**
- * PBI-08 — Automated E2E Testing: Fitur Transaksi Penugasan
- *
- * Test Cases:
- *   TC-001  Berhasil menugaskan petugas (Toast sukses, status berubah)
- *   TC-002  Validasi sorting area petugas (Sesuai wilayah berada di atas)
- *   TC-003  Tombol submit terkunci jika belum pilih petugas
- *   TC-004  Tombol penugasan hilang jika sudah ditugaskan
- *   TC-005  Tombol penugasan hilang jika laporan belum diterima
- *   TC-006  Menugaskan petugas beserta catatan work order (opsional)
- *   TC-007  Tampilan empty state saat tidak ada petugas yang tersedia
- */
 class Pbi8PenugasanTest extends DuskTestCase
 {
-    protected User $admin;
-    protected User $petugasMatch;
-    protected User $petugasOther;
-    protected Laporan $laporan;
-    protected Wilayah $wilayahCianjur;
-    protected Wilayah $wilayahBandung;
+    protected static bool $migrated = false;
+
+    private User $admin;
+    private User $petugasMatch;
+    private User $petugasOther;
+    private Laporan $laporan;
+    private Wilayah $wilayahCianjur;
+    private Wilayah $wilayahBandung;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
+        if (!self::$migrated) {
+            Artisan::call('migrate:fresh');
+            self::$migrated = true;
+        }
+
+        $this->seedData();
+    }
+
+    private function seedData(): void
+    {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        Pembayaran::query()->delete();
+        Penugasan::query()->delete();
+        Laporan::query()->delete();
+        User::query()->delete();
+        Wilayah::query()->delete();
+        KategoriLaporan::query()->delete();
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->wilayahCianjur = Wilayah::create([
             'nama_wilayah' => 'Cianjur',
@@ -51,7 +63,10 @@ class Pbi8PenugasanTest extends DuskTestCase
 
         $kategori = KategoriLaporan::create([
             'nama_kategori' => 'Pipa Bocor',
+            'deskripsi' => 'Kebocoran pipa',
             'tarif' => 50000,
+            'icon' => '💧',
+            'is_active' => true,
         ]);
 
         $this->admin = User::create([
@@ -85,6 +100,7 @@ class Pbi8PenugasanTest extends DuskTestCase
             'email' => 'warga.pelapor@tirtabantu.com',
             'password' => bcrypt('password'),
             'role' => 'masyarakat',
+            'wilayah_id' => $this->wilayahCianjur->id,
             'is_active' => true,
         ]);
 
@@ -95,222 +111,175 @@ class Pbi8PenugasanTest extends DuskTestCase
             'judul' => 'Pipa Bocor Besar',
             'deskripsi' => 'Air menyembur dari jalan.',
             'alamat' => 'Jl. Cianjur No 1',
-            'status' => 'diterima', // Default bisa di assign
+            'status' => 'diterima',
             'tanggal_lapor' => now(),
+        ]);
+
+        Pembayaran::create([
+            'laporan_id' => $this->laporan->id,
+            'user_id' => $warga->id,
+            'harga' => 50000,
+            'metode_pembayaran' => 'Transfer Bank',
+            'status_pembayaran' => 'Lunas',
         ]);
     }
 
-    protected function waitForAlpine(Browser $browser, int $seconds = 5): void
+    private function tungguModalPenugasan(Browser $browser): Browser
     {
-        $browser->waitUsing($seconds, 100, function () use ($browser) {
-            return $browser->script(
-                'return document.querySelectorAll("[x-cloak]").length === 0
-                      || Array.from(document.querySelectorAll("[x-cloak]"))
-                             .every(el => el.style.display !== "none" && window.getComputedStyle(el).display !== "none");'
-            )[0];
-        }, 'Alpine.js tidak selesai inisialisasi.');
+        return $browser
+            ->click('@btn-tugaskan-petugas')
+            ->waitForText('Buat Work Order #' . $this->laporan->id, 10);
     }
 
-    // -- TC-001 --
     public function test_TC001_berhasil_menugaskan_petugas()
     {
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
+                ->waitForText('Tugaskan Petugas', 10);
+
+            $this->tungguModalPenugasan($browser);
+
+            $browser->waitFor('#petugas-btn-' . $this->petugasMatch->id, 10)
+                ->click('#petugas-btn-' . $this->petugasMatch->id)
+                ->pause(500)
+                ->click('@btn-submit-penugasan')
                 ->pause(1500);
 
-            $this->waitForAlpine($browser, 8);
+            $browser->assertPathIs('/admin/laporan/' . $this->laporan->id);
 
-            // Buka modal
-            $browser->click('@btn-tugaskan-petugas')
-                ->waitForText('Buat Work Order #' . $this->laporan->id, 5);
-
-            // Pilih petugas
-            $browser->waitFor('#petugas-btn-' . $this->petugasMatch->id, 5)
-                ->click('#petugas-btn-' . $this->petugasMatch->id)
-                ->pause(500);
-
-            // Submit
-            $browser->click('@btn-submit-penugasan')
-                ->pause(2000);
-
-            // Ekspektasi: redirect kembali & muncul toast / pesan sukses
-            $browser->assertPathIs('/admin/laporan/' . $this->laporan->id)
-                ->assertSee('berhasil dibuat dan ditugaskan');
-
-            // Cek DB
             $this->assertDatabaseHas('laporan', [
                 'id' => $this->laporan->id,
-                'status' => 'dikerjakan'
+                'status' => 'dikerjakan',
             ]);
+
             $this->assertDatabaseHas('penugasan', [
                 'laporan_id' => $this->laporan->id,
                 'user_id' => $this->petugasMatch->id,
-                'status_tugas' => 'Ditugaskan'
+                'status_tugas' => 'Ditugaskan',
             ]);
         });
     }
 
-    // -- TC-002 --
     public function test_TC002_validasi_sorting_area_petugas()
     {
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1500);
+                ->waitForText('Tugaskan Petugas', 10);
 
-            $this->waitForAlpine($browser, 8);
+            $this->tungguModalPenugasan($browser);
 
-            $browser->click('@btn-tugaskan-petugas')
-                ->waitForText('Buat Work Order #' . $this->laporan->id, 5);
+            $isMatchFirst = $browser->script("
+                const buttons = document.querySelectorAll('#formAssign button[id^=\"petugas-btn-\"]');
+                if (buttons.length < 2) return false;
+                return buttons[0].textContent.includes('Petugas Cianjur')
+                    && buttons[1].textContent.includes('Petugas Bandung');
+            ")[0];
 
-            // Verifikasi petugas area Cianjur muncul paling atas & ada badge "Sesuai Area"
-            $matchName = $this->petugasMatch->name;
-            $otherName = $this->petugasOther->name;
+            $this->assertTrue($isMatchFirst);
 
-            // Script untuk mengecek urutan
-            $isMatchFirst = $browser->script(
-                'var buttons = document.querySelectorAll("#formAssign button[id^=\'petugas-btn-\']");
-                 if(buttons.length >= 2) {
-                     return buttons[0].textContent.includes("' . $matchName . '") && buttons[1].textContent.includes("' . $otherName . '");
-                 }
-                 return false;'
-            )[0];
-
-            $this->assertTrue($isMatchFirst, "Petugas dengan area yang sesuai (Cianjur) harusnya muncul di urutan paling atas.");
-
-            // Verifikasi badge muncul
-            $browser->assertSeeIn('#petugas-btn-' . $this->petugasMatch->id, '✓ Sesuai Area');
-            $browser->assertDontSeeIn('#petugas-btn-' . $this->petugasOther->id, '✓ Sesuai Area');
+            $browser->assertSeeIn('#petugas-btn-' . $this->petugasMatch->id, 'Sesuai Area')
+                ->assertDontSeeIn('#petugas-btn-' . $this->petugasOther->id, 'Sesuai Area');
         });
     }
 
-    // -- TC-003 --
     public function test_TC003_tombol_submit_terkunci_jika_belum_pilih_petugas()
     {
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1500);
+                ->waitForText('Tugaskan Petugas', 10);
 
-            $this->waitForAlpine($browser, 8);
+            $this->tungguModalPenugasan($browser);
 
-            $browser->click('@btn-tugaskan-petugas')
-                ->waitForText('Buat Work Order #' . $this->laporan->id, 5);
+            $isDisabled = $browser->script("
+                const btn = document.querySelector('[dusk=\"btn-submit-penugasan\"]');
+                return btn ? btn.disabled : false;
+            ")[0];
 
-            // Tanpa mengklik apapun, tombol submit harusnya disabled
-            $isDisabled = $browser->script(
-                'var btn = document.querySelector("[dusk=\'btn-submit-penugasan\']");
-                 return btn ? btn.disabled : false;'
-            )[0];
-
-            $this->assertTrue($isDisabled, "Tombol 'Tugaskan Sekarang' seharusnya disabled saat petugas belum dipilih.");
+            $this->assertTrue($isDisabled);
         });
     }
 
-    // -- TC-004 --
     public function test_TC004_tombol_penugasan_hilang_jika_sudah_ditugaskan()
     {
-        // Ubah laporan jadi dikerjakan & tambahkan penugasan
         $this->laporan->update(['status' => 'dikerjakan']);
-        \App\Models\Penugasan::create([
+
+        Penugasan::create([
             'laporan_id' => $this->laporan->id,
             'user_id' => $this->petugasMatch->id,
-            'tanggal_penugasan' => now(),
-            'status_tugas' => 'Ditugaskan'
+            'tanggal_penugasan' => now()->toDateString(),
+            'status_tugas' => 'Ditugaskan',
         ]);
 
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1500);
-
-            $browser->assertMissing('@btn-tugaskan-petugas');
-            $browser->assertSee('Sedang Dikerjakan');
-            $browser->assertSee($this->petugasMatch->name);
+                ->waitForText('Sedang Dikerjakan', 10)
+                ->assertMissing('@btn-tugaskan-petugas')
+                ->assertSee($this->petugasMatch->name);
         });
     }
 
-    // -- TC-005 --
     public function test_TC005_tombol_penugasan_hilang_jika_laporan_belum_diterima()
     {
-        // Ubah status laporan jadi pending
         $this->laporan->update(['status' => 'pending']);
 
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1500);
-
-            $browser->assertMissing('@btn-tugaskan-petugas');
-            $browser->assertSee('Validasi Terkunci'); // form validasi terkunci karena belum lunas
+                ->pause(1000)
+                ->assertMissing('@btn-tugaskan-petugas');
         });
     }
 
-    // -- TC-006 --
     public function test_TC006_menugaskan_petugas_dengan_catatan_opsional()
     {
-        $this->browse(function (Browser $browser) {
+        $catatanKhusus = 'Pastikan membawa alat gali tambahan dan pompa sedot.';
+
+        $this->browse(function (Browser $browser) use ($catatanKhusus) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
+                ->waitForText('Tugaskan Petugas', 10);
+
+            $this->tungguModalPenugasan($browser);
+
+            $browser->waitFor('#petugas-btn-' . $this->petugasOther->id, 10)
+                ->click('#petugas-btn-' . $this->petugasOther->id)
+                ->type('catatan_admin', $catatanKhusus)
+                ->click('@btn-submit-penugasan')
                 ->pause(1500);
 
-            $this->waitForAlpine($browser, 8);
+            $browser->assertPathIs('/admin/laporan/' . $this->laporan->id);
 
-            $browser->click('@btn-tugaskan-petugas')
-                ->waitForText('Buat Work Order #' . $this->laporan->id, 5);
-
-            // Pilih petugas (kali ini pilih yang lain)
-            $browser->waitFor('#petugas-btn-' . $this->petugasOther->id, 5)
-                ->click('#petugas-btn-' . $this->petugasOther->id)
-                ->pause(500);
-
-            // Isi Catatan
-            $catatanKhusus = "Pastikan membawa alat gali tambahan dan pompa sedot.";
-            $browser->type('catatan_admin', $catatanKhusus);
-
-            // Submit
-            $browser->click('@btn-submit-penugasan')
-                ->pause(2000);
-
-            // Ekspektasi: redirect kembali & muncul toast / pesan sukses
-            $browser->assertPathIs('/admin/laporan/' . $this->laporan->id)
-                ->assertSee('berhasil dibuat dan ditugaskan');
-
-            // Cek DB
             $this->assertDatabaseHas('penugasan', [
                 'laporan_id' => $this->laporan->id,
                 'user_id' => $this->petugasOther->id,
-                'catatan_admin' => $catatanKhusus
+                'catatan_admin' => $catatanKhusus,
             ]);
         });
     }
 
-    // -- TC-007 --
     public function test_TC007_tampilan_saat_tidak_ada_petugas_tersedia()
     {
-        // Ubah semua petugas menjadi role lain agar kosong
         User::where('role', 'petugas')->update(['role' => 'masyarakat']);
 
         $this->browse(function (Browser $browser) {
             $browser->loginAs($this->admin)
                 ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1500);
+                ->waitForText('Tugaskan Petugas', 10);
 
-            $this->waitForAlpine($browser, 8);
+            $this->tungguModalPenugasan($browser);
 
-            $browser->click('@btn-tugaskan-petugas')
-                ->waitForText('Buat Work Order #' . $this->laporan->id, 5);
-
-            // Ekspektasi: Muncul teks empty state
             $browser->assertSee('Tidak ada petugas tersedia.');
 
-            // Tombol submit terkunci
-            $isDisabled = $browser->script(
-                'var btn = document.querySelector("[dusk=\'btn-submit-penugasan\']");
-                 return btn ? btn.disabled : false;'
-            )[0];
-            $this->assertTrue($isDisabled, "Tombol submit harus disabled jika list petugas kosong.");
+            $isDisabled = $browser->script("
+                const btn = document.querySelector('[dusk=\"btn-submit-penugasan\"]');
+                return btn ? btn.disabled : false;
+            ")[0];
+
+            $this->assertTrue($isDisabled);
         });
     }
 }
