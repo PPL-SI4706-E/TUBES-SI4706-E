@@ -93,6 +93,25 @@ class User extends Authenticatable
     public function getAverageRatingAttribute(): ?float
     {
         if ($this->role !== 'petugas') return null;
+
+        if ($this->relationLoaded('penugasanSebagaiPetugas')) {
+            $ratings = collect();
+            foreach ($this->penugasanSebagaiPetugas as $p) {
+                if ($p->relationLoaded('ulasan') && $p->ulasan) {
+                    $ratings->push($p->ulasan->rating);
+                } elseif (!$p->relationLoaded('ulasan')) {
+                    // Fallback to query if ulasan not eager loaded
+                    return $this->penugasanSebagaiPetugas()
+                        ->whereHas('ulasan')
+                        ->with('ulasan')
+                        ->get()
+                        ->flatMap(fn($t) => $t->ulasan ? [$t->ulasan->rating] : [])
+                        ->avg();
+                }
+            }
+            return $ratings->count() > 0 ? $ratings->avg() : null;
+        }
+
         return $this->penugasanSebagaiPetugas()
             ->whereHas('ulasan')
             ->with('ulasan')

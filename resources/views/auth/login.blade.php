@@ -82,7 +82,7 @@
                             ];
                             @endphp
                             @foreach($roles as $r)
-                                <label class="cursor-pointer">
+                                <label class="cursor-pointer" dusk="role-{{ $r['val'] }}">
                                     <input type="radio" name="role" value="{{ $r['val'] }}"
                                            x-model="selectedRole"
                                            class="peer sr-only">

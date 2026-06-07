@@ -478,13 +478,20 @@
             @endif
 
             @if($laporan->status === 'diterima')
+            @php
+                $isLunas = optional($laporan->pembayaran)->status_pembayaran === 'Lunas';
+            @endphp
             <div class="mt-4 pt-4 border-t border-slate-100">
                 <button type="button"
                    dusk="btn-tugaskan-petugas"
-                   @click="showAssignModal = true"
-                   class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">
+                   @if($isLunas) @click="showAssignModal = true" @endif
+                   @if(!$isLunas) disabled title="Pembayaran belum Lunas" @endif
+                   class="w-full flex items-center justify-center gap-2 font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm {{ $isLunas ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-slate-300 text-slate-500 cursor-not-allowed' }}">
                     <i data-lucide="user-plus" class="w-4 h-4"></i> Tugaskan Petugas
                 </button>
+                @if(!$isLunas)
+                    <p class="text-red-500 text-xs mt-2 text-center font-medium">Pembayaran belum lunas. Petugas tidak dapat ditugaskan.</p>
+                @endif
             </div>
 
             {{-- ── MODAL PENUGASAN ── --}}

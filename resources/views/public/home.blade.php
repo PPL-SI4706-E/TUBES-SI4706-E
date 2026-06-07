@@ -187,25 +187,37 @@
                             <span class="text-slate-400" style="font-size:0.8rem">{{ $featured['tgl_posting'] }}</span>
                         </div>
                         <h3 class="text-red-800 mb-2" style="font-size:1.15rem;font-weight:700">{{ $featured['judul'] }}</h3>
-                        <p class="text-slate-700" style="font-size:0.9rem;line-height:1.7">{{ $featured['isi'] }}</p>
+                        <p class="text-slate-700 mb-4" style="font-size:0.9rem;line-height:1.7">{{ $featured['isi'] }}</p>
+                        <a href="{{ route('pengumuman.detail', $featured['id']) }}" class="text-red-600 hover:text-red-800 font-semibold text-sm inline-flex items-center gap-1">
+                            Baca Selengkapnya
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
                     </div>
                 </div>
             @endif
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 @forelse($otherPengumuman as $p)
-                    <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="{{ $kategoriIkon[$p['kategori']] }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p['kategori']] }}</span>
-                            <span class="text-slate-400 ml-auto" style="font-size:0.75rem">{{ $p['tgl_posting'] }}</span>
+                    <div class="bg-white border border-sky-100 rounded-xl p-5 hover:shadow-lg transition-all hover:-translate-y-0.5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="{{ $kategoriIkon[$p['kategori']] }} px-2.5 py-0.5 rounded-full" style="font-size:0.7rem;font-weight:700">{{ $kategoriLabel[$p['kategori']] }}</span>
+                                <span class="text-slate-400 ml-auto" style="font-size:0.75rem">{{ $p['tgl_posting'] }}</span>
+                            </div>
+                            <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p['judul'] }}</h3>
+                            <p class="text-slate-600 mb-4" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
                         </div>
-                        <h3 class="text-sky-800 mb-2" style="font-size:0.95rem;font-weight:600">{{ $p['judul'] }}</h3>
-                        <p class="text-slate-600" style="font-size:0.83rem;line-height:1.6">{{ \Illuminate\Support\Str::limit($p['isi'], 120) }}</p>
+                        <div>
+                            <a href="{{ route('pengumuman.detail', $p['id']) }}" class="text-sky-600 hover:text-sky-800 font-semibold text-sm inline-flex items-center gap-1">
+                                Baca Selengkapnya
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        </div>
                     </div>
                 @empty
                     @if(!$featured)
                         <div class="md:col-span-2 lg:col-span-3 bg-white border border-dashed border-sky-200 rounded-2xl p-8 text-center">
-                            <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada pengumuman aktif</p>
+                            <p class="text-sky-800 mb-2" style="font-size:1rem;font-weight:600">Belum ada pengumuman yang tersedia</p>
                             <p class="text-slate-500" style="font-size:0.85rem;line-height:1.7">Admin belum menambahkan pengumuman. Setelah dibuat dari panel admin, informasinya akan otomatis tampil di beranda ini.</p>
                         </div>
                     @endif

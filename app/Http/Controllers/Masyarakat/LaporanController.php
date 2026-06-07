@@ -182,6 +182,19 @@ class LaporanController extends Controller
             'tanggal_ulasan' => now()->toDateString(),
         ]);
 
+        // Simpan ke Testimoni Publik jika ada komentar agar Admin bisa me-review dan menampilkannya di Landing Page
+        if (!empty($r->komentar)) {
+            \App\Models\TestimoniPublik::create([
+                'nama' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'rating' => $r->rating,
+                'pesan' => $r->komentar,
+                'status' => 'pending',
+                'session_token' => \Illuminate\Support\Str::random(40),
+                'editable_until' => now()->addMinutes(5),
+            ]);
+        }
+
         // PBI-18: Notifikasi Ulasan Buruk ke Admin
         if ($r->rating <= 2) {
             $admins = User::where('role', 'admin')->get();
