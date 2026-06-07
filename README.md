@@ -1,66 +1,143 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TirtaBantu 💧
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+TirtaBantu adalah sebuah Sistem Manajemen Laporan Air Bersih yang memfasilitasi pelaporan masyarakat terkait masalah air bersih (seperti pipa bocor, kualitas air buruk, dll), hingga penugasan petugas lapangan dan verifikasi pembayaran.
 
-## About Laravel
+Sistem ini dikembangkan menggunakan **Laravel 11**, **Tailwind CSS**, dan **Alpine.js**, serta dilengkapi dengan pengujian *End-to-End* (*E2E*) menggunakan **Laravel Dusk**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👤 Masyarakat (Warga)
+- Pendaftaran akun mandiri.
+- Membuat laporan masalah air berdasarkan wilayah.
+- Melacak status laporan secara real-time.
+- Melakukan pembayaran (mendukung *Payment Gateway* Midtrans).
+- Memberikan ulasan dan rating kepada petugas lapangan setelah tugas selesai.
+- Menerima notifikasi otomatis atas perkembangan laporan.
 
-## Learning Laravel
+### 👷 Petugas Lapangan
+- Menerima tugas/work order yang ditugaskan oleh admin.
+- Mengubah status pekerjaan (menuju lokasi, sedang dikerjakan, dll).
+- Mengunggah foto bukti penyelesaian perbaikan.
+- Melihat daftar tugas yang belum selesai dan riwayat pekerjaan.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 👑 Admin
+- Dashboard interaktif dengan statistik laporan dan pendapatan.
+- Mengelola data master (Wilayah & Kategori Laporan).
+- Memverifikasi laporan masyarakat dan menugaskannya kepada petugas yang sesuai dengan area.
+- Mengelola data user (Masyarakat, Petugas, Admin).
+- Memverifikasi bukti pembayaran manual.
+- Melihat Kinerja Petugas (jumlah tugas selesai, rata-rata rating) dan mencetak laporannya.
+- Mencetak (Export Excel/PDF) laporan keseluruhan dan laporan pembayaran.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠 Persyaratan Sistem
 
-## Laravel Sponsors
+Pastikan sistem Anda memenuhi persyaratan berikut sebelum menjalankan aplikasi:
+- **PHP** >= 8.2
+- **Composer** (untuk instalasi dependensi PHP)
+- **Node.js & npm** (untuk instalasi dependensi frontend / Vite)
+- **MySQL** / **MariaDB**
+- **Git**
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## ⚙️ Cara Instalasi & Menjalankan Aplikasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+Ikuti langkah-langkah berikut untuk menjalankan aplikasi di komputer lokal (Development Environment):
 
-## Contributing
+### 1. Clone Repository
+```bash
+git clone https://github.com/PPL-SI4706-E/TUBES-SI4706-E.git
+cd TUBES-SI4706-E
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 2. Install Dependensi PHP & Frontend
+```bash
+composer install
+npm install
+```
 
-## Code of Conduct
+### 3. Konfigurasi Environment File
+Salin file `.env.example` menjadi `.env`.
+```bash
+cp .env.example .env
+```
+Buka file `.env` dan atur konfigurasi database (sesuaikan dengan lokal Anda):
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=tirtabantu
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+*(Opsional)* Jika Anda ingin mencoba fitur pembayaran otomatis dengan Midtrans, atur juga bagian konfigurasi Midtrans di dalam `.env`:
+```env
+MIDTRANS_SERVER_KEY=server_key_anda
+MIDTRANS_CLIENT_KEY=client_key_anda
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_IS_SANITIZED=true
+MIDTRANS_IS_3DS=true
+```
 
-## Security Vulnerabilities
+### 4. Generate Application Key
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 5. Jalankan Migrasi & Seeder Database
+Siapkan database Anda di MySQL, lalu jalankan perintah berikut untuk membuat struktur tabel dan mengisi data awal (Admin default, kategori, wilayah, dll).
+```bash
+php artisan migrate:fresh --seed
+```
 
-## License
+### 6. Jalankan Server Development
+Buka dua tab terminal. 
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Di terminal pertama, jalankan Vite untuk melakukan kompilasi aset (Tailwind & Alpine) secara langsung:
+```bash
+npm run dev
+```
+
+Di terminal kedua, jalankan server PHP Laravel:
+```bash
+php artisan serve
+```
+
+Aplikasi dapat diakses melalui browser pada alamat: **http://127.0.0.1:8000**
+
+---
+
+## 🧪 Pengujian E2E (Laravel Dusk)
+
+Aplikasi ini menggunakan Laravel Dusk untuk E2E testing yang melakukan simulasi pengguna di browser Chrome secara otomatis.
+
+> **Perhatian:** Saat menjalankan Dusk, pastikan port `8080` kosong dan jangan jalankan E2E test ke database production.
+
+Untuk menjalankan pengujian, cukup eksekusi perintah:
+```bash
+php artisan dusk
+```
+*(Sistem kami telah mengonfigurasi `phpunit.dusk.xml` untuk secara otomatis menggunakan environment testing terpisah dan akan menjamin database test selalu segar).*
+
+---
+
+## 🔐 Akun Default untuk Testing
+
+Jika Anda telah menjalankan seeder (`php artisan db:seed` atau `migrate:fresh --seed`), Anda dapat menggunakan akun berikut untuk masuk:
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | admin@tirtabantu.com | password |
+| **Petugas** | petugas@tirtabantu.com | password |
+| **Warga** | warga@tirtabantu.com | password |
+
+*(Petugas dan Warga lainnya dapat didaftarkan secara manual melalui menu registrasi atau panel Admin).*
+
+---
+
+**© 2026 TirtaBantu Team. Hak Cipta Dilindungi.**
