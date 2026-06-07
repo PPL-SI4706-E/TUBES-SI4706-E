@@ -131,7 +131,7 @@ class LaporanController extends Controller
             $r->validate([
                 'komentar' => 'required|string|max:1000',
             ], [
-                'komentar.required' => 'Mohon berikan alasan revisi (komentar).',
+                'komentar.required' => 'Alasan penolakan/revisi wajib diisi',
             ]);
 
             // Hapus bukti penyelesaian jika ada
@@ -170,6 +170,7 @@ class LaporanController extends Controller
             'komentar' => 'nullable|string|max:1000',
         ], [
             'rating.required' => 'Mohon berikan rating bintang.',
+            'rating.min'      => 'Mohon berikan rating bintang.',
         ]);
 
         // Simpan Ulasan
