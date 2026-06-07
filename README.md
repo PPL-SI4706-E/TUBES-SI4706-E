@@ -114,15 +114,31 @@ Aplikasi dapat diakses melalui browser pada alamat: **http://127.0.0.1:8000**
 
 ## 🧪 Pengujian E2E (Laravel Dusk)
 
-Aplikasi ini menggunakan Laravel Dusk untuk E2E testing yang melakukan simulasi pengguna di browser Chrome secara otomatis.
+Aplikasi ini menggunakan Laravel Dusk untuk E2E testing yang melakukan simulasi pengguna di browser Chrome secara otomatis. Pengujian memerlukan database yang terpisah dari environment development agar data lokal Anda tidak terhapus.
 
-> **Perhatian:** Saat menjalankan Dusk, pastikan port `8080` kosong dan jangan jalankan E2E test ke database production.
+### Langkah-langkah Menjalankan Testing:
 
-Untuk menjalankan pengujian, cukup eksekusi perintah:
-```bash
-php artisan dusk
-```
-*(Sistem kami telah mengonfigurasi `phpunit.dusk.xml` untuk secara otomatis menggunakan environment testing terpisah dan akan menjamin database test selalu segar).*
+1. **Buat Database Testing**
+   Buat database baru di MySQL lokal Anda dengan nama `tirtabantu_testing`.
+
+2. **Buat File Environment Testing**
+   Salin file `.env` menjadi `.env.dusk.local`.
+   ```bash
+   cp .env .env.dusk.local
+   ```
+   Buka file `.env.dusk.local` dan sesuaikan koneksi databasenya, serta ubah APP_PORT agar tidak bentrok dengan server utama:
+   ```env
+   APP_URL=http://dusk.local:8080
+   APP_PORT=8080
+   DB_DATABASE=tirtabantu_testing
+   ```
+
+3. **Jalankan Dusk**
+   Cukup eksekusi perintah berikut untuk memulai testing otomatis:
+   ```bash
+   php artisan dusk
+   ```
+   *(Sistem telah dikonfigurasi melalui `phpunit.dusk.xml` untuk secara otomatis menggunakan `.env.dusk.local`, menjalankan server PHP di port `8080`, dan melakukan refresh pada database `tirtabantu_testing`).*
 
 ---
 
