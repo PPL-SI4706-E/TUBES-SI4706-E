@@ -17,8 +17,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revert the rename if needed
-        if (Schema::hasTable('users')) {
-            Schema::rename('users', 'user');
-        }
+        // if (Schema::hasTable('users')) {
+        //     Schema::rename('users', 'user');
+        // }
     }
 };

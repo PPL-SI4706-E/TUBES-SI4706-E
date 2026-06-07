@@ -39,20 +39,28 @@ class Pbi4PelaporanBerbasisPetaTest extends DuskTestCase
 
         // 1. Valid Photo (< 5MB)
         $this->validPhotoPath = $tempDir . '/bukti.jpg';
-        $img = imagecreatetruecolor(10, 10);
-        imagejpeg($img, $this->validPhotoPath);
-        imagedestroy($img);
 
-        // 2. Large Photo (> 5MB) -> 6MB
-        $this->largePhotoPath = $tempDir . '/foto_besar.png';
-        $img2 = imagecreatetruecolor(10, 10);
-        imagepng($img2, $this->largePhotoPath);
-        imagedestroy($img2);
-        file_put_contents($this->largePhotoPath, str_repeat('B', 6 * 1024 * 1024), FILE_APPEND);
+        $jpg = base64_decode(
+            '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBAQEA8PDw8QDw8PDw8PDw8PDw8PFREWFhURFRUYHSggGBolHRUVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGi0lHyUtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAAEAAgMBIgACEQEDEQH/xAAVAAEBAAAAAAAAAAAAAAAAAAAABf/EABQBAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhADEAAAAaf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAEFAqf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/Aaf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/Aaf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/Aqf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IV//2gAMAwEAAgADAAAAEP/EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQMBAT8QH//EABQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQIBAT8QH//EABQQAQAAAAAAAAAAAAAAAAAAABD/2gAIAQEAAT8QH//Z'
+        );
+
+        file_put_contents($this->validPhotoPath, $jpg);
+
+        // 2. Large Photo (> 5MB)
+        $this->largePhotoPath = $tempDir . '/foto_besar.jpg';
+
+        file_put_contents(
+            $this->largePhotoPath,
+            str_repeat('A', 6 * 1024 * 1024)
+        );
 
         // 3. Invalid format (.pdf)
         $this->invalidDocPath = $tempDir . '/dokumen.pdf';
-        File::put($this->invalidDocPath, 'Ini adalah file PDF palsu');
+
+        File::put(
+            $this->invalidDocPath,
+            'Ini adalah file PDF palsu'
+        );
     }
 
     protected function loginAndGoToCreate(Browser $browser)

@@ -51,7 +51,7 @@
                                 Daftar Sebagai <span class="text-red-500">*</span>
                             </label>
                             <div class="grid grid-cols-2 gap-3">
-                                <label class="cursor-pointer">
+                                <label class="cursor-pointer" dusk="role-masyarakat">
                                     <input type="radio" name="role" value="masyarakat" x-model="role" class="peer sr-only"
                                         required>
                                     <div class="border-2 rounded-2xl p-3 text-center transition-all duration-300 transform peer-checked:scale-105
@@ -69,7 +69,7 @@
                                             style="font-size:0.75rem;font-weight:700">Masyarakat</span>
                                     </div>
                                 </label>
-                                <label class="cursor-pointer">
+                                <label class="cursor-pointer" dusk="role-admin">
                                     <input type="radio" name="role" value="admin" x-model="role" class="peer sr-only"
                                         required>
                                     <div class="border-2 rounded-2xl p-3 text-center transition-all duration-300 transform peer-checked:scale-105

@@ -93,6 +93,14 @@ class Pbi18NotificationTest extends DuskTestCase
             'tanggal_lapor' => now(),
         ]);
 
+        \App\Models\Pembayaran::create([
+            'laporan_id' => $this->laporan->id,
+            'user_id' => $warga->id,
+            'harga' => 50000,
+            'metode_pembayaran' => 'Transfer Bank',
+            'status_pembayaran' => 'Lunas',
+        ]);
+
     }
 
     /**

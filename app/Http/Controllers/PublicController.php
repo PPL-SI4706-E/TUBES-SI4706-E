@@ -54,7 +54,8 @@ class PublicController extends Controller
 
     public function pengumumanDetail($id)
     {
-        return view('public.pengumuman-detail', ['id' => $id]);
+        $pengumuman = Pengumuman::findOrFail($id);
+        return view('public.pengumuman-detail', compact('pengumuman'));
     }
 
     public function storeTestimoni(Request $request): RedirectResponse
