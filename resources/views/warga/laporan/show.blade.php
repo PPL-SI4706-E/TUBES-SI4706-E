@@ -187,6 +187,9 @@
                 <div class="mb-5">
                     <label class="block text-slate-500 text-xs font-semibold uppercase mb-1.5">Ulasan / Komentar (Opsional)</label>
                     <textarea name="komentar" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="Bagaimana hasil perbaikannya?"></textarea>
+                    @error('komentar')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Tombol Action (Selesai / Revisi) --}}
