@@ -9,6 +9,18 @@
             <h1 class="text-2xl font-bold text-slate-800">Verifikasi Pembayaran</h1>
             <p class="text-slate-500 text-sm">Kelola dan validasi bukti transfer biaya perbaikan dari pelanggan</p>
         </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.pembayaran.export.excel') }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-700">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                Export Excel
+            </a>
+            <a href="{{ route('admin.pembayaran.export.pdf') }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700">
+                <i data-lucide="file-text" class="h-4 w-4"></i>
+                Export PDF
+            </a>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

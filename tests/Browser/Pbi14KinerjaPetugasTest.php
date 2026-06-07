@@ -283,13 +283,15 @@ class Pbi14KinerjaPetugasTest extends DuskTestCase
 
             $browser->visit('/admin/kinerja')
                 ->waitForText('Kinerja Petugas', 10)
-                ->clickLink('Jumlah Tugas Selesai')
+                ->clickLink('Tugas Selesai')
                 ->pause(1000)
-                ->assertQueryStringHas('sort_by', 'tugas_selesai_count');
-
-            $browser->clickLink('Jumlah Tugas Selesai')
-                ->pause(1000)
+                ->assertQueryStringHas('sort_by', 'tugas_selesai_count')
                 ->assertQueryStringHas('sort_dir', 'desc');
+
+            $browser->clickLink('Tugas Selesai')
+                ->pause(1000)
+                ->assertQueryStringHas('sort_by', 'tugas_selesai_count')
+                ->assertQueryStringHas('sort_dir', 'asc');
         });
     }
 
