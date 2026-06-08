@@ -27,82 +27,23 @@ class Pbi8PenugasanTest extends DuskTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        if (!self::$migrated) {
-            Artisan::call('migrate:fresh');
-            self::$migrated = true;
-        }
+        
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', ['--seed' => true]);
 
         $this->seedData();
     }
 
     private function seedData(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        $this->wilayahCianjur = Wilayah::first();
+        $this->wilayahBandung = Wilayah::skip(1)->first();
+        $kategori = KategoriLaporan::first();
 
-        Pembayaran::query()->delete();
-        Penugasan::query()->delete();
-        Laporan::query()->delete();
-        User::query()->delete();
-        Wilayah::query()->delete();
-        KategoriLaporan::query()->delete();
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        $this->wilayahCianjur = Wilayah::create([
-            'nama_wilayah' => 'Cianjur',
-            'tipe' => 'kecamatan',
-            'kode_wilayah' => 'CJR-01',
-        ]);
-
-        $this->wilayahBandung = Wilayah::create([
-            'nama_wilayah' => 'Bandung',
-            'tipe' => 'kecamatan',
-            'kode_wilayah' => 'BDG-01',
-        ]);
-
-        $kategori = KategoriLaporan::create([
-            'nama_kategori' => 'Pipa Bocor',
-            'deskripsi' => 'Kebocoran pipa',
-            'tarif' => 50000,
-            'icon' => '💧',
-            'is_active' => true,
-        ]);
-
-        $this->admin = User::create([
-            'name' => 'Admin PBI 8',
-            'email' => 'admin.pbi8@tirtabantu.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-            'is_active' => true,
-        ]);
-
-        $this->petugasMatch = User::create([
-            'name' => 'Petugas Cianjur',
-            'email' => 'petugas.cianjur@tirtabantu.com',
-            'password' => bcrypt('password'),
-            'role' => 'petugas',
-            'wilayah_id' => $this->wilayahCianjur->id,
-            'is_active' => true,
-        ]);
-
-        $this->petugasOther = User::create([
-            'name' => 'Petugas Bandung',
-            'email' => 'petugas.bandung@tirtabantu.com',
-            'password' => bcrypt('password'),
-            'role' => 'petugas',
-            'wilayah_id' => $this->wilayahBandung->id,
-            'is_active' => true,
-        ]);
-
-        $warga = User::create([
-            'name' => 'Warga Pelapor',
-            'email' => 'warga.pelapor@tirtabantu.com',
-            'password' => bcrypt('password'),
-            'role' => 'masyarakat',
-            'wilayah_id' => $this->wilayahCianjur->id,
-            'is_active' => true,
-        ]);
+        $this->admin = User::where('email', 'admin@tirtabantu.id')->first();
+        $this->petugasMatch = User::where('email', 'budi@tirtabantu.id')->first();
+        $this->petugasOther = User::where('email', 'siti@tirtabantu.id')->first();
+        $warga = User::where('email', 'andi@gmail.com')->first();
 
         $this->laporan = Laporan::create([
             'user_id' => $warga->id,
@@ -115,6 +56,12 @@ class Pbi8PenugasanTest extends DuskTestCase
             'tanggal_lapor' => now(),
         ]);
 
+        \App\Models\MapLokasi::create([
+            'laporan_id' => $this->laporan->id,
+            'latitude' => -6.9175,
+            'longitude' => 107.6191,
+        ]);
+
         Pembayaran::create([
             'laporan_id' => $this->laporan->id,
             'user_id' => $warga->id,
@@ -124,19 +71,56 @@ class Pbi8PenugasanTest extends DuskTestCase
         ]);
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        static::closeAll(); // Membunuh instance browser agar tidak terjadi tumpukan memori (InvalidSessionId)
+    }
+
     private function tungguModalPenugasan(Browser $browser): Browser
     {
         return $browser
+            ->pause(1000) // Jeda agar dosen bisa melihat tombol sebelum diklik
             ->click('@btn-tugaskan-petugas')
-            ->waitForText('Buat Work Order #' . $this->laporan->id, 10);
+            ->waitForText('Buat Work Order #' . $this->laporan->id, 10)
+            ->pause(1000); // Jeda melihat pop up terbuka
+    }
+
+    protected function visualLoginAndGoToLaporan(Browser $browser)
+    {
+        // Bersihkan sesi sebelumnya (jika ada)
+        $browser->driver->manage()->deleteAllCookies();
+
+        // 1. Mulai dari Home (Beranda)
+        $browser->visit('/')
+                ->pause(1000)
+                ->clickLink('Masuk')
+                ->pause(1000);
+
+        // 2. Login visual UI step-by-step
+        $browser->click('@role-admin')
+                ->pause(500)
+                ->type('email', $this->admin->email)
+                ->pause(1000)
+                ->type('password', 'password')
+                ->pause(1000)
+                ->click('button[type="submit"]')
+                ->pause(1500);
+
+        // 2. Mampir ke daftar laporan Admin dulu (Berlaku untuk test ke-2 dst)
+        $browser->visit('/admin/laporan')
+                ->pause(1000);
+
+        // 3. Masuk ke halaman detail spesifik
+        $browser->visitRoute('admin.laporan.show', $this->laporan->id)
+                ->pause(1000);
     }
 
     public function test_TC001_berhasil_menugaskan_petugas()
     {
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Tugaskan Petugas', 10);
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Tugaskan Petugas', 10);
 
             $this->tungguModalPenugasan($browser);
 
@@ -158,38 +142,38 @@ class Pbi8PenugasanTest extends DuskTestCase
                 'user_id' => $this->petugasMatch->id,
                 'status_tugas' => 'Ditugaskan',
             ]);
+            $browser->pause(20000); // Delay 20 detik
         });
     }
 
     public function test_TC002_validasi_sorting_area_petugas()
     {
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Tugaskan Petugas', 10);
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Tugaskan Petugas', 10);
 
             $this->tungguModalPenugasan($browser);
 
             $isMatchFirst = $browser->script("
                 const buttons = document.querySelectorAll('#formAssign button[id^=\"petugas-btn-\"]');
                 if (buttons.length < 2) return false;
-                return buttons[0].textContent.includes('Petugas Cianjur')
-                    && buttons[1].textContent.includes('Petugas Bandung');
+                return buttons[0].textContent.includes('Sesuai Area')
+                    && !buttons[buttons.length - 1].textContent.includes('Sesuai Area');
             ")[0];
 
             $this->assertTrue($isMatchFirst);
 
             $browser->assertSeeIn('#petugas-btn-' . $this->petugasMatch->id, 'Sesuai Area')
-                ->assertDontSeeIn('#petugas-btn-' . $this->petugasOther->id, 'Sesuai Area');
+                ->assertDontSeeIn('#petugas-btn-' . $this->petugasOther->id, 'Sesuai Area')
+                ->pause(20000); // Delay 20 detik
         });
     }
 
     public function test_TC003_tombol_submit_terkunci_jika_belum_pilih_petugas()
     {
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Tugaskan Petugas', 10);
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Tugaskan Petugas', 10);
 
             $this->tungguModalPenugasan($browser);
 
@@ -199,6 +183,7 @@ class Pbi8PenugasanTest extends DuskTestCase
             ")[0];
 
             $this->assertTrue($isDisabled);
+            $browser->pause(20000); // Delay 20 detik
         });
     }
 
@@ -214,11 +199,11 @@ class Pbi8PenugasanTest extends DuskTestCase
         ]);
 
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Sedang Dikerjakan', 10)
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Sedang Dikerjakan', 10)
                 ->assertMissing('@btn-tugaskan-petugas')
-                ->assertSee($this->petugasMatch->name);
+                ->assertSee($this->petugasMatch->name)
+                ->pause(20000); // Delay 20 detik
         });
     }
 
@@ -227,10 +212,10 @@ class Pbi8PenugasanTest extends DuskTestCase
         $this->laporan->update(['status' => 'pending']);
 
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->pause(1000)
-                ->assertMissing('@btn-tugaskan-petugas');
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->pause(1000)
+                ->assertMissing('@btn-tugaskan-petugas')
+                ->pause(20000); // Delay 20 detik
         });
     }
 
@@ -239,15 +224,15 @@ class Pbi8PenugasanTest extends DuskTestCase
         $catatanKhusus = 'Pastikan membawa alat gali tambahan dan pompa sedot.';
 
         $this->browse(function (Browser $browser) use ($catatanKhusus) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Tugaskan Petugas', 10);
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Tugaskan Petugas', 10);
 
             $this->tungguModalPenugasan($browser);
 
             $browser->waitFor('#petugas-btn-' . $this->petugasOther->id, 10)
                 ->click('#petugas-btn-' . $this->petugasOther->id)
                 ->type('catatan_admin', $catatanKhusus)
+                ->pause(2000) // Jeda panjang agar dosen bisa melihat teks catatan yang diketik
                 ->click('@btn-submit-penugasan')
                 ->pause(1500);
 
@@ -258,6 +243,7 @@ class Pbi8PenugasanTest extends DuskTestCase
                 'user_id' => $this->petugasOther->id,
                 'catatan_admin' => $catatanKhusus,
             ]);
+            $browser->pause(20000); // Delay 20 detik
         });
     }
 
@@ -266,13 +252,13 @@ class Pbi8PenugasanTest extends DuskTestCase
         User::where('role', 'petugas')->update(['role' => 'masyarakat']);
 
         $this->browse(function (Browser $browser) {
-            $browser->loginAs($this->admin)
-                ->visitRoute('admin.laporan.show', $this->laporan->id)
-                ->waitForText('Tugaskan Petugas', 10);
+            $this->visualLoginAndGoToLaporan($browser);
+            $browser->waitForText('Tugaskan Petugas', 10);
 
             $this->tungguModalPenugasan($browser);
 
-            $browser->assertSee('Tidak ada petugas tersedia.');
+            $browser->assertSee('Tidak ada petugas tersedia.')
+                ->pause(1500); // Jeda agar dosen bisa membaca tulisan error-nya
 
             $isDisabled = $browser->script("
                 const btn = document.querySelector('[dusk=\"btn-submit-penugasan\"]');
@@ -280,6 +266,7 @@ class Pbi8PenugasanTest extends DuskTestCase
             ")[0];
 
             $this->assertTrue($isDisabled);
+            $browser->pause(20000); // Delay 20 detik
         });
     }
 }

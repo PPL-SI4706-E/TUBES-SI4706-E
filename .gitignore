@@ -18,5 +18,12 @@ yarn-error.log
 /.vscode
 .phpunit.result.cache
 /storage/framework/sessions/*
+.env.dusk.local
+
+# Temporary / Ignored Files & Folders
 /Figma Tirtabantu/
+/Tesupload/
 /Salinan dari Template Proposal PPL_V01.pdf
+fix_tests.php
+fix_wait.php
+test_map.php  

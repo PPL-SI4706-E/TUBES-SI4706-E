@@ -76,7 +76,13 @@
                     </div>
 
                     @if($laporan->mapLokasi)
-                        <div id="laporan-map" class="w-full h-[260px] rounded-xl border border-slate-200 shadow-sm z-10"></div>
+                        <div id="laporan-map" class="w-full h-[260px] rounded-xl border border-slate-200 shadow-sm z-10 mb-2"></div>
+                        <div class="text-xs text-slate-500 bg-white border border-slate-100 rounded-lg p-2.5 flex items-center justify-between">
+                            <span>Titik Koordinat GPS:</span>
+                            <span class="font-mono text-sky-600 font-medium">
+                                {{ $laporan->mapLokasi->latitude }}, {{ $laporan->mapLokasi->longitude }}
+                            </span>
+                        </div>
                         <script>
                             setTimeout(function () {
                                 if (typeof L !== 'undefined') {

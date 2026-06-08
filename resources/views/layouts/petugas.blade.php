@@ -107,7 +107,12 @@
                             <a href="{{ route('notifikasi.index') }}" class="font-semibold text-slate-800 text-sm hover:text-sky-600 transition-colors">Notifikasi</a>
                             <div class="flex gap-3">
                                 <button x-show="unreadCount > 0" @click="dropdownReadAll()" class="text-[11px] text-sky-600 hover:text-sky-700 font-medium flex items-center gap-1"><i data-lucide="check-check" class="w-3 h-3"></i> Tandai semua</button>
-                                <button x-show="items.length > 0" @click="dropdownClearAll()" class="text-[11px] text-red-500 hover:text-red-600 font-medium flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Bersihkan</button>
+                                <button x-show="items.length > 0 && !showClearConfirm" @click="showClearConfirm = true" class="text-[11px] text-red-500 hover:text-red-600 font-medium flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Bersihkan</button>
+                                <span x-show="showClearConfirm" class="flex items-center gap-1">
+                                    <span class="text-[10px] text-red-600 font-medium">Hapus semua?</span>
+                                    <button @click="dropdownClearAll(); showClearConfirm = false" class="text-[10px] bg-red-500 hover:bg-red-600 text-white px-1.5 py-0.5 rounded font-bold" id="petugas-notif-clear-confirm">Ya</button>
+                                    <button @click="showClearConfirm = false" class="text-[10px] text-slate-500 hover:text-slate-700 font-medium">Batal</button>
+                                </span>
                             </div>
                         </div>
                         <div class="max-h-[350px] overflow-y-auto divide-y divide-slate-50" id="petugas-notif-list">
@@ -168,15 +173,15 @@
 <script>
 function notifBell() {
     return {
-        open: false, items: [], unreadCount: 0, loadingDrop: false,
+        open: false, items: [], unreadCount: 0, loadingDrop: false, showClearConfirm: false,
         _h(m) { const t = document.querySelector('meta[name="csrf-token"]'); const h = {'Accept':'application/json'}; if(t) h['X-CSRF-TOKEN']=t.content; if(m && m!=='GET') h['Content-Type']='application/json'; return h; },
         relTime(iso) { if(!iso) return ''; const d=(Date.now()-new Date(iso))/1000; if(d<60) return 'Baru saja'; if(d<3600) return Math.floor(d/60)+' mnt lalu'; if(d<86400) return Math.floor(d/3600)+' jam lalu'; return Math.floor(d/86400)+' hari lalu'; },
         async fetchUnread() { try { const r=await fetch('/api/notifications?filter=unread',{headers:this._h()}); const j=await r.json(); this.unreadCount=j.unread_count??0; } catch(e){} },
-        async fetchDropdown() { this.loadingDrop=true; try { const r=await fetch('/api/notifications',{headers:this._h()}); const j=await r.json(); this.items=(j.notifications??[]).slice(0,5); this.unreadCount=j.unread_count??0; this.$nextTick(()=>{if(window.lucide) lucide.createIcons();}); } catch(e){} finally{this.loadingDrop=false;} },
+        async fetchDropdown() { this.loadingDrop=true; try { const r=await fetch('/api/notifications',{headers:this._h()}); const j=await r.json(); this.items=(j.notifications??[]).slice(0,15); this.unreadCount=j.unread_count??0; this.$nextTick(()=>{if(window.lucide) lucide.createIcons();}); } catch(e){} finally{this.loadingDrop=false;} },
         async dropdownMarkRead(id) { try { const r=await fetch('/api/notifications/'+id+'/read',{method:'PATCH',headers:this._h('PATCH')}); const j=await r.json(); const n=this.items.find(i=>i.id===id); if(n) n.read=true; this.unreadCount=j.unread_count??Math.max(0,this.unreadCount-1); } catch(e){} },
         async dropdownReadAll() { try { await fetch('/api/notifications/read-all',{method:'POST',headers:this._h('POST')}); this.items.forEach(n=>n.read=true); this.unreadCount=0; } catch(e){} },
         async dropdownDelete(id) { try { const r=await fetch('/api/notifications/'+id,{method:'DELETE',headers:this._h('DELETE')}); const j=await r.json(); this.items=this.items.filter(i=>i.id!==id); this.unreadCount=j.unread_count??this.unreadCount; } catch(e){} },
-        async dropdownClearAll() { if(!confirm('Hapus semua notifikasi?')) return; try { await fetch('/api/notifications/clear-all',{method:'DELETE',headers:this._h('DELETE')}); this.items=[]; this.unreadCount=0; } catch(e){} },
+        async dropdownClearAll() { try { await fetch('/api/notifications/clear-all',{method:'DELETE',headers:this._h('DELETE')}); this.items=[]; this.unreadCount=0; } catch(e){} },
     };
 }
 </script>
